@@ -5,15 +5,12 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Getter @Setter
 public class Task {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String content;
@@ -27,5 +24,9 @@ public class Task {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    private Set<Task> ReferencedTasks = new HashSet<>();
+    public Task(String content) {
+        this.content = content;
+        this.status = TaskStatus.TODO;
+        this.createdAt = LocalDateTime.now();
+    }
 }
