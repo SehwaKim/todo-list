@@ -1,12 +1,18 @@
-package me.sehwa.todolist.domain;
+package me.sehwa.todolist.taskDependencies;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
+import me.sehwa.todolist.tasks.Task;
 
 import javax.persistence.*;
 
 @Entity
-@Getter @Setter
+@Table(name = "task_dependency")
+@Getter
+@Builder @AllArgsConstructor
+@NoArgsConstructor
 public class TaskDependency {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
