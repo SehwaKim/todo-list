@@ -13,8 +13,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -45,5 +47,14 @@ public class TaskControllerTest {
                 .content(objectMapper.writeValueAsString(taskDto)))
                 .andDo(print())
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void 모든_TODO_조회하기() throws Exception {
+        mockMvc.perform(get("/api/tasks")
+                .param("size", "8")
+                .param("page", "1"))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -32,8 +33,9 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity getTasks() {
-        return null;
+    public ResponseEntity getTasks(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "8") int size) {
+        List<Task> tasks = taskService.getTasks(page, size);
+        return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/{id}")
