@@ -1,13 +1,14 @@
-package me.sehwa.todolist.domain;
+package me.sehwa.todolist.tasks;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter @Setter
+@Builder @AllArgsConstructor
+@NoArgsConstructor
 public class Task {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,10 +24,4 @@ public class Task {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    public Task(String content) {
-        this.content = content;
-        this.status = TaskStatus.TODO;
-        this.createdAt = LocalDateTime.now();
-    }
 }

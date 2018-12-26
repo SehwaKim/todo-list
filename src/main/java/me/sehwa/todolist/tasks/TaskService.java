@@ -1,0 +1,25 @@
+package me.sehwa.todolist.tasks;
+
+import me.sehwa.todolist.taskDependencies.TaskDependency;
+import me.sehwa.todolist.taskDependencies.TaskDependencyRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class TaskService {
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
+    private TaskDependencyRepository taskDependencyRepository;
+
+    public void createNewTaskAndDependencies(Task task, List<Long> dependencies) {
+        Task savedTask = taskRepository.save(task);
+//        if (!dependencies.isEmpty()) {
+//            dependencies.forEach(id->taskDependencyRepository.save(TaskDependency.builder().previous(id).next(savedTask.getId())));
+//        }
+    }
+}
