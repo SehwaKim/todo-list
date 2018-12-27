@@ -20,9 +20,25 @@ public class TaskDependency {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "previous_id")
-    private Task previous;
+    private Task previousTask;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "next_id")
-    private Task next;
+    private Task nextTask;
+
+    public void setPreviousTask(Task previousTask) {
+        if (this.previousTask != null) {
+            this.previousTask.getNextTaskIDs().remove(this);
+        }
+        this.previousTask = previousTask;
+        previousTask.getNextTaskIDs().add(this);
+    }
+
+    public void setNextTask(Task nextTask) {
+        if (this.nextTask != null) {
+            this.nextTask.getPreviousTaskIDs().remove(this);
+        }
+        this.nextTask = nextTask;
+        nextTask.getPreviousTaskIDs().add(this);
+    }
 }
