@@ -18,7 +18,7 @@ public class TaskDependency {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // lazy 일 경우라도 previousTask.getId() 했을때 쿼리문 실행안되야되는데 확인해봐야함
     @JoinColumn(name = "previous_id")
     private Task previousTask;
 

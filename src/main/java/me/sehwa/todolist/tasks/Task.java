@@ -31,7 +31,7 @@ public class Task {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "nextTask", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "nextTask", fetch = FetchType.LAZY)
     private List<TaskDependency> previousTaskIDs = new ArrayList<>();
 
     @OneToMany(mappedBy = "previousTask", fetch = FetchType.LAZY)
