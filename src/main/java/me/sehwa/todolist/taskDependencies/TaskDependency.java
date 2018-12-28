@@ -18,27 +18,27 @@ public class TaskDependency {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY) // lazy 일 경우라도 previousTask.getId() 했을때 쿼리문 실행안되야되는데 확인해봐야함
-    @JoinColumn(name = "previous_id")
-    private Task previousTask;
+    @ManyToOne(fetch = FetchType.LAZY) // lazy 일 경우라도 parentTask.getId() 했을때 쿼리문 실행안되야되는데 확인해봐야함
+    @JoinColumn(name = "parent_task_id")
+    private Task parentTask;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "next_id")
-    private Task nextTask;
+    @JoinColumn(name = "child_task_id")
+    private Task childTask;
 
-    public void setPreviousTask(Task previousTask) {
-        if (this.previousTask != null) {
-            this.previousTask.getNextTaskIDs().remove(this);
+    public void setParentTask(Task parentTask) {
+        if (this.parentTask != null) {
+            this.parentTask.getChildTasksFollowingParentTask().remove(this);
         }
-        this.previousTask = previousTask;
-        previousTask.getNextTaskIDs().add(this);
+        this.parentTask = parentTask;
+        parentTask.getChildTasksFollowingParentTask().add(this);
     }
 
-    public void setNextTask(Task nextTask) {
-        if (this.nextTask != null) {
-            this.nextTask.getPreviousTaskIDs().remove(this);
+    public void setChildTask(Task childTask) {
+        if (this.childTask != null) {
+            this.childTask.getParentTasksFollowedByChildTask().remove(this);
         }
-        this.nextTask = nextTask;
-        nextTask.getPreviousTaskIDs().add(this);
+        this.childTask = childTask;
+        childTask.getParentTasksFollowedByChildTask().add(this);
     }
 }

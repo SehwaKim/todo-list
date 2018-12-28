@@ -31,19 +31,19 @@ public class Task {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "nextTask", fetch = FetchType.LAZY)
-    private List<TaskDependency> previousTaskIDs = new ArrayList<>();
+    @OneToMany(mappedBy = "childTask", fetch = FetchType.LAZY)
+    private List<TaskDependency> parentTasksFollowedByChildTask = new ArrayList<>();
 
-    @OneToMany(mappedBy = "previousTask", fetch = FetchType.LAZY)
-    private List<TaskDependency> nextTaskIDs = new ArrayList<>();
+    @OneToMany(mappedBy = "parentTask", fetch = FetchType.LAZY)
+    private List<TaskDependency> childTasksFollowingParentTask = new ArrayList<>();
 
-    public void addPreviousTaskIDs(TaskDependency taskDependency) {
-        this.previousTaskIDs.add(taskDependency);
-        taskDependency.setNextTask(this);
+    public void addParentTasksFollowedByChildTask(TaskDependency taskDependency) {
+        this.parentTasksFollowedByChildTask.add(taskDependency);
+        taskDependency.setChildTask(this);
     }
 
-    public void addNextTaskIDs(TaskDependency taskDependency) {
-        this.nextTaskIDs.add(taskDependency);
-        taskDependency.setPreviousTask(this);
+    public void addChildTasksFollowingParentTask(TaskDependency taskDependency) {
+        this.childTasksFollowingParentTask.add(taskDependency);
+        taskDependency.setParentTask(this);
     }
 }
