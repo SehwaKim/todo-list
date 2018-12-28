@@ -2,12 +2,15 @@ package me.sehwa.todolist.taskDependencies;
 
 import me.sehwa.todolist.tasks.Task;
 import me.sehwa.todolist.tasks.TaskRepository;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,57 +25,84 @@ public class TaskDependencyRepositoryTest {
     @Autowired
     private TaskRepository taskRepository;
 
+    private List<Task> tasksForTest = new ArrayList<>();
+
+    @Before
+    public void setSomeTasks() {
+        tasksForTest.add(taskRepository.save(Task.builder().id(1L).build()));
+        tasksForTest.add(taskRepository.save(Task.builder().id(2L).build()));
+        tasksForTest.add(taskRepository.save(Task.builder().id(3L).build()));
+    }
+
+    @Test
+    public void testNotNull() {
+        assertThat(taskDependencyRepository).isNotNull();
+    }
+
     @Test
     public void 새_TODO_의존관계_생성하기() {
-        Task previous = taskRepository.getOne(1L);
-        Task next = taskRepository.getOne(2L);
-        TaskDependency saved = taskDependencyRepository.save(createNewDependency(previous, next));
+        Task parent = tasksForTest.get(0);
+        Task child = tasksForTest.get(1);
+
+        TaskDependency saved = taskDependencyRepository.save(createNewDependency(parent, child));
 
         assertThat(taskDependencyRepository.existsById(saved.getId())).isTrue();
     }
 
     @Test
-    public void 선행조건_기준으로_후행조건들_가져오기() {
-        Task previous = taskRepository.getOne(1L);
-        Task next1 = taskRepository.getOne(3L);
-        Task next2 = taskRepository.getOne(2L);
-        Task next3 = taskRepository.getOne(4L);
+    public void 부모_TODO_기준으로_자식_TODO들_가져오기() {
+        Task parent = tasksForTest.get(0);
+        Task child1 = tasksForTest.get(1);
+        Task child2 = tasksForTest.get(2);
 
-        taskDependencyRepository.save(createNewDependency(previous, next1));
-        taskDependencyRepository.save(createNewDependency(previous, next2));
-        taskDependencyRepository.save(createNewDependency(previous, next3));
+        taskDependencyRepository.save(createNewDependency(parent, child1));
+        taskDependencyRepository.save(createNewDependency(parent, child2));
 
-        List<TaskDependency> all = taskDependencyRepository.findAllByPreviousId(previous.getId());
-        assertThat(all.size()).isEqualTo(3);
+        List<TaskDependency> all = taskDependencyRepository.findAllByParentTaskId(parent.getId());
+
+        assertThat(all.size()).isEqualTo(2);
     }
 
     @Test
-    public void 후행조건_기준으로_선행조건들_가져오기() {
-        Task previous1 = taskRepository.getOne(4L);
-        Task previous2 = taskRepository.getOne(3L);
-        Task previous3 = taskRepository.getOne(2L);
-        Task next = taskRepository.getOne(1L);
+    public void 자식_TODO_기준으로_부모_TODO들_가져오기() {
+        Task child = tasksForTest.get(0);
+        Task parent1 = tasksForTest.get(1);
+        Task parent2 = tasksForTest.get(2);
 
-        taskDependencyRepository.save(createNewDependency(previous1, next));
-        taskDependencyRepository.save(createNewDependency(previous2, next));
-        taskDependencyRepository.save(createNewDependency(previous3, next));
+        taskDependencyRepository.save(createNewDependency(parent1, child));
+        taskDependencyRepository.save(createNewDependency(parent2, child));
 
-        List<TaskDependency> all = taskDependencyRepository.findAllByNextId(next.getId());
-        assertThat(all.size()).isEqualTo(3);
+        List<TaskDependency> all = taskDependencyRepository.findAllByChildTaskId(child.getId());
+
+        assertThat(all.size()).isEqualTo(2);
     }
 
     @Test
-    public void TODO_의존관계_삭제하기() {
-        Task previous = taskRepository.getOne(1L);
-        Task next = taskRepository.getOne(2L);
-        TaskDependency saved = taskDependencyRepository.save(createNewDependency(previous, next));
-        assertThat(taskDependencyRepository.existsById(saved.getId())).isTrue();
+    public void 특정_TODO_의존관계_한개_삭제하기() {
+        Task child = tasksForTest.get(0);
+        Task parent = tasksForTest.get(1);
+        TaskDependency saved = taskDependencyRepository.save(createNewDependency(parent, child));
 
-        taskDependencyRepository.delete(saved);
+        taskDependencyRepository.deleteByChildTaskIdAndParentTaskId(child.getId(), parent.getId());
+
         assertThat(taskDependencyRepository.existsById(saved.getId())).isFalse();
     }
 
-    private TaskDependency createNewDependency(Task previous, Task next) {
-        return TaskDependency.builder().previous(previous).next(next).build();
+    @Test
+    public void 자식_TODO_기준으로_모든_의존관계_삭제하기() {
+        Task child = tasksForTest.get(0);
+        Task parent1 = tasksForTest.get(1);
+        Task parent2 = tasksForTest.get(2);
+
+        taskDependencyRepository.save(createNewDependency(parent1, child));
+        taskDependencyRepository.save(createNewDependency(parent2, child));
+
+        taskDependencyRepository.deleteAllByChildTaskId(child.getId());
+
+        assertThat(taskDependencyRepository.findAllByChildTaskId(child.getId()).isEmpty()).isTrue();
+    }
+
+    private TaskDependency createNewDependency(Task parentTask, Task childTask) {
+        return TaskDependency.builder().parentTask(parentTask).childTask(childTask).build();
     }
 }

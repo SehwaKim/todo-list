@@ -19,6 +19,11 @@ public class TaskRepositoryTest {
     private TaskRepository taskRepository;
 
     @Test
+    public void testNotNull() {
+        assertThat(taskRepository).isNotNull();
+    }
+
+    @Test
     public void 새_TODO_저장하기() {
         String content = "방 청소하기";
         Task saved = taskRepository.save(createNewTask(content));
@@ -30,13 +35,13 @@ public class TaskRepositoryTest {
     @Test
     public void 모든_TODO_가져오기() {
         List<Task> all = taskRepository.findAll();
-        assertThat(all.size()).isEqualTo(0);
+        int size = all.size();
 
         taskRepository.save(createNewTask("청소기 돌리기"));
         taskRepository.save(createNewTask("이불 개기"));
 
         all = taskRepository.findAll();
-        assertThat(all.size()).isEqualTo(2);
+        assertThat(all.size()).isEqualTo(size + 2);
     }
 
     @Test
@@ -73,6 +78,6 @@ public class TaskRepositoryTest {
     }
 
     private Task createNewTask(String content) {
-        return new Task(content);
+        return Task.builder().content(content).status(TaskStatus.TODO).createdAt(LocalDateTime.now()).build();
     }
 }
