@@ -36,14 +36,4 @@ public class Task {
 
     @OneToMany(mappedBy = "parentTask", fetch = FetchType.LAZY)
     private List<TaskDependency> childTasksFollowingParentTask = new ArrayList<>();
-
-    public void addParentTasksFollowedByChildTask(TaskDependency taskDependency) {
-        this.parentTasksFollowedByChildTask.add(taskDependency);
-        taskDependency.setChildTask(this);
-    }
-
-    public void addChildTasksFollowingParentTask(TaskDependency taskDependency) {
-        this.childTasksFollowingParentTask.add(taskDependency);
-        taskDependency.setParentTask(this);
-    }
 }

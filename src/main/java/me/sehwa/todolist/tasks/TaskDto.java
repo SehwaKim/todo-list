@@ -10,7 +10,8 @@ import java.util.List;
 public class TaskDto {
 
     private String content;
-    private List<Long> parentTaskIDs;
-    private boolean done;
-    private boolean updateStatusOnly;
+    private TaskStatus status;
+    private List<Long> idGroupOfTasksToBeParent;
+
+    private boolean updateOnlyForStatus;
 }

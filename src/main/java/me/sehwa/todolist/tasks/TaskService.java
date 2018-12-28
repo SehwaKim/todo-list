@@ -1,8 +1,14 @@
 package me.sehwa.todolist.tasks;
 
+import me.sehwa.todolist.exceptions.AllTasksNeedToBeDoneException;
+import me.sehwa.todolist.exceptions.BreakChainBetweenTasksException;
+import me.sehwa.todolist.exceptions.CircularReferenceException;
+import me.sehwa.todolist.exceptions.NoSuchTaskException;
 import me.sehwa.todolist.taskDependencies.TaskDependency;
 import me.sehwa.todolist.taskDependencies.TaskDependencyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,119 +28,135 @@ public class TaskService {
     private TaskDependencyRepository taskDependencyRepository;
 
     @Transactional
-    public void createNewTaskAndDependencies(Task task, List<Long> newParentTaskIDs) {
+    public void createNewTaskAndTaskDependencies(Task task, List<Long> IdGroupOfTasksToBeParent) {
+
         Task savedTask = taskRepository.save(task);
 
-        if (!newParentTaskIDs.isEmpty()) {
-            for (Long newParentId : newParentTaskIDs) {
-                Optional<Task> byId = taskRepository.findById(newParentId);
-                if (!byId.isPresent()) {
-                    throw new RuntimeException();
-                }
+        if (IdGroupOfTasksToBeParent.isEmpty()) {
+            return;
+        }
 
-                TaskDependency dependency = TaskDependency.builder()
-                                            .nextTask(savedTask).previousTask(byId.get()).build();
-                taskDependencyRepository.save(dependency);
-            }
+        for (Long Id : IdGroupOfTasksToBeParent) {
+
+            Optional<Task> optionalTask = taskRepository.findById(Id);
+            Task taskToBeParent = optionalTask.orElseThrow(NoSuchTaskException::new);
+
+            TaskDependency dependency = TaskDependency.builder()
+                                        .childTask(savedTask).parentTask(taskToBeParent).build();
+            taskDependencyRepository.save(dependency);
         }
     }
 
     @Transactional(readOnly = true)
-    public List<Task> getTasks(int page, int size) {
-        // TODO 파라미터로 pageable 전달해야함
-        return taskRepository.findAll();
+    public Page<Task> getTasks(Pageable pageable) {
+
+        return taskRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
     public Optional<Task> getTaskById(Long id) {
+
         return taskRepository.findById(id);
     }
 
     @Transactional
-    public void updateTask(Task existingTask, TaskDto taskDto) {
-        List<TaskDependency> existingParentTaskIDs = existingTask.getPreviousTaskIDs();
-        Set<Long> filter = new HashSet<>();
-        existingParentTaskIDs.forEach(p -> filter.add(p.getId()));
+    public void updateTask(Task updatingTask, TaskDto taskDto) {
 
-        List<Long> newParentTaskIDs = taskDto.getParentTaskIDs();
+        List<TaskDependency> parentTasksFollowedByChildTask = updatingTask.getParentTasksFollowedByChildTask();
 
-        // TODO 기존 조건을 없애는건 괜찮지만 새 조건을 추가할 때 순환참조가 일어날 수 있다
-        // TODO 서로에게 존재하는거는 스킵하고 지워진건 taskDependency 삭제시키고
-        // TODO 새로운건 taskDependency 생성시키는데 "순환참조 안되는거 맞는지" 검사해야함
-        // TODO 만약 순환참조되면 엑셉션 발생시키기
+        Set<Long> filterComparingOldAndNew = new HashSet<>();
+        parentTasksFollowedByChildTask.forEach(parentTask -> filterComparingOldAndNew.add(parentTask.getId()));
 
-        for (Long newParentTaskId : newParentTaskIDs) {
-            boolean newId = filter.add(newParentTaskId);
-            if (newId) {
-                Optional<Task> byId = taskRepository.findById(newParentTaskId);
-                if (!byId.isPresent()) {
-                    throw new RuntimeException(); // 존재하지 않는 task 를 부모 task 로 삼으려고 한다 익셉션
+        List<Long> idGroupOfCandidatesForParentTask = taskDto.getIdGroupOfTasksToBeParent();
+
+        for (Long id : idGroupOfCandidatesForParentTask) {
+
+            boolean isNewlyAddedAsParent = filterComparingOldAndNew.add(id);
+
+            if (isNewlyAddedAsParent) {
+                Optional<Task> optionalTask = taskRepository.findById(id);
+                Task taskToBeParent = optionalTask.orElseThrow(NoSuchTaskException::new);
+
+                Set<Long> alreadyVisitedNodes = new HashSet<>();
+
+                boolean isChildTask =
+                        searchAllChildTasksAndCompareTo(id, updatingTask.getChildTasksFollowingParentTask(), alreadyVisitedNodes);
+
+                if (isChildTask) {
+                    throw new CircularReferenceException();
                 }
 
-                // 그 다음 순환참조 검사 이 parentId로 할라고 하는 것이 내 자식은 아닌지.. 검사를...
-                Set<Long> visitedIDs = new HashSet<>();
-                boolean containsAnyAsChild =
-                        searchAllChildTasksAndCompare(existingTask.getNextTaskIDs(), newParentTaskId, visitedIDs);
-
-                if (containsAnyAsChild) {
-                    // 내 자식들을 뒤졌는데 일치하는 아이디가 있으면 익셉션
-                    // 부모로 삼으려고 하는데 알고보니 내 자식이었으면 순환참조가 일어나게 되니까
-                    throw new RuntimeException();
-                }
-
-                // 문제없으면 새로운 의존관계 저장
                 TaskDependency taskDependency =
-                        TaskDependency.builder().previousTask(byId.get()).nextTask(existingTask).build();
+                        TaskDependency.builder().parentTask(taskToBeParent).childTask(updatingTask).build();
+
                 taskDependencyRepository.save(taskDependency);
             }
-            filter.remove(newParentTaskId);
+
+            removeParentTaskIdFromFilter(filterComparingOldAndNew, id);
         }
 
-        // 기존 조건 없애기 (수정시 지우려고 의도한 조건)
-        filter.forEach(parentTaskId ->
-                taskDependencyRepository.deleteByChildIdAndParentId(existingTask.getId(), parentTaskId)
-        );
+        deleteRemainingOldDependencies(updatingTask, filterComparingOldAndNew);
 
-        existingTask.setContent(taskDto.getContent());
-        saveWithUpdatedTime(existingTask);
+        updatingTask.setContent(taskDto.getContent());
+        saveWithUpdatedTime(updatingTask);
     }
 
-    private boolean searchAllChildTasksAndCompare(List<TaskDependency> nextTaskIDs, Long newParentTaskId, Set<Long> visitedIDs) {
-        if (nextTaskIDs.isEmpty()) {
+    private void deleteRemainingOldDependencies(Task updatingTask, Set<Long> filter) {
+        filter.forEach(notSelectedId ->
+                taskDependencyRepository.deleteByChildTaskIdAndParentTaskId(updatingTask.getId(), notSelectedId)
+        );
+    }
+
+    private void removeParentTaskIdFromFilter(Set<Long> filter, Long id) {
+        filter.remove(id);
+    }
+
+    private boolean searchAllChildTasksAndCompareTo(Long idOfTaskToBeParent,
+                                                    List<TaskDependency> childTasksFollowingParentTask,
+                                                    Set<Long> alreadyVisitedNodes) {
+
+        if (childTasksFollowingParentTask.isEmpty()) {
             return false;
         }
 
-        boolean containsAnyAsChild = false;
+        boolean isChildTask = false;
 
-        for (TaskDependency dependency : nextTaskIDs) {
-            Long existingChildTaskId = dependency.getNextTask().getId();
+        for (TaskDependency dependency : childTasksFollowingParentTask) {
 
-            if (visitedIDs.contains(existingChildTaskId)) {
+            Long childTaskId = dependency.getChildTask().getId();
+
+            if (alreadyVisitedNodes.contains(childTaskId)) {
                 continue;
             }
-            if (newParentTaskId.equals(existingChildTaskId)) {
-                containsAnyAsChild = true;
+
+            if (idOfTaskToBeParent.equals(childTaskId)) {
+                isChildTask = true;
                 break;
             }
 
-            visitedIDs.add(existingChildTaskId);
-            containsAnyAsChild = searchAllChildTasksAndCompare(dependency.getNextTask().getNextTaskIDs(), newParentTaskId, visitedIDs);
-            if (containsAnyAsChild) {
+            alreadyVisitedNodes.add(childTaskId);
+
+            isChildTask = searchAllChildTasksAndCompareTo(idOfTaskToBeParent,
+                                                    dependency.getChildTask().getChildTasksFollowingParentTask(),
+                                                    alreadyVisitedNodes);
+
+            if (isChildTask) {
                 break;
             }
         }
 
-        return containsAnyAsChild;
+        return isChildTask;
     }
 
     @Transactional
     public void setTaskDone(Task existingTask) {
-        boolean allParentTasksDone = existingTask.getPreviousTaskIDs()
+
+        boolean allParentTasksDone = existingTask.getParentTasksFollowedByChildTask()
                             .stream()
-                            .allMatch(previousID -> previousID.getPreviousTask().getStatus() == TaskStatus.DONE);
+                            .allMatch(previousID -> previousID.getParentTask().getStatus().isDone());
 
         if (!allParentTasksDone) {
-            throw new RuntimeException(); // TODO 이거말고 내가 익셉션 정의해야할거같은데
+            throw new AllTasksNeedToBeDoneException();
         }
 
         saveWithUpdatedTime(existingTask);
@@ -142,37 +164,42 @@ public class TaskService {
 
     @Transactional
     public void setTaskToDo(Task existingTask) {
-        setAllChildTasksTodoAndSave(existingTask.getNextTaskIDs());
+
+        setAllChildTasksTodoAndSave(existingTask.getChildTasksFollowingParentTask());
         saveWithUpdatedTime(existingTask);
     }
 
-    private void setAllChildTasksTodoAndSave(List<TaskDependency> nextTaskIDs) {
-        if(nextTaskIDs.isEmpty()) return;
+    private void setAllChildTasksTodoAndSave(List<TaskDependency> childTasksFollowingParentTask) {
 
-        for (TaskDependency nextTaskID : nextTaskIDs) {
-            Task nextTask = nextTaskID.getNextTask();
+        if(childTasksFollowingParentTask.isEmpty()) return;
 
-            if (nextTask.getStatus() == TaskStatus.TODO) {
+        for (TaskDependency dependency : childTasksFollowingParentTask) {
+            Task childTask = dependency.getChildTask();
+
+            if (childTask.getStatus().isTodo()) {
                 continue;
             }
-            nextTask.setStatus(TaskStatus.TODO);
-            taskRepository.save(nextTask);
-            setAllChildTasksTodoAndSave(nextTask.getNextTaskIDs());
+
+            childTask.setStatus(TaskStatus.TODO);
+            taskRepository.save(childTask);
+            setAllChildTasksTodoAndSave(childTask.getChildTasksFollowingParentTask());
         }
     }
 
     private void saveWithUpdatedTime(Task existingTask) {
+
         existingTask.setUpdatedAt(LocalDateTime.now());
         taskRepository.save(existingTask);
     }
 
     @Transactional
-    public void removeTask(Task existingTask) {
-        // TODO 만약 이 task 의 바로 아래 자식이 하나라도 있으면 (next 가 있으면) 삭제할수 없다 익셉션 발생
-        if (!existingTask.getNextTaskIDs().isEmpty()) {
-            throw new RuntimeException();
+    public void removeTask(Task removingTask) {
+
+        if (!removingTask.getChildTasksFollowingParentTask().isEmpty()) {
+            throw new BreakChainBetweenTasksException();
         }
-        taskDependencyRepository.deleteAllByNextTaskId(existingTask.getId());
-        taskRepository.delete(existingTask);
+
+        taskDependencyRepository.deleteAllByChildTaskId(removingTask.getId());
+        taskRepository.delete(removingTask);
     }
 }
