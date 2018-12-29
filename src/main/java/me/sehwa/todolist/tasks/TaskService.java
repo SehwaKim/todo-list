@@ -80,7 +80,7 @@ public class TaskService {
                 Set<Long> alreadyVisitedNodes = new HashSet<>();
 
                 boolean isChildTask =
-                        searchAllChildTasksAndCompareTo(id, updatingTask.getChildTasksFollowingParentTask(), alreadyVisitedNodes);
+                        searchAllChildTasksAndCompareRecursively(id, updatingTask.getChildTasksFollowingParentTask(), alreadyVisitedNodes);
 
                 if (isChildTask) {
                     throw new CircularReferenceException();
@@ -92,7 +92,7 @@ public class TaskService {
                 taskDependencyRepository.save(taskDependency);
             }
 
-            removeParentTaskIdFromFilter(filterComparingOldAndNew, id);
+            removeParentTaskIdFromFilter(id, filterComparingOldAndNew);
         }
 
         deleteRemainingOldDependencies(updatingTask, filterComparingOldAndNew);
@@ -107,13 +107,13 @@ public class TaskService {
         );
     }
 
-    private void removeParentTaskIdFromFilter(Set<Long> filter, Long id) {
+    private void removeParentTaskIdFromFilter(Long id, Set<Long> filter) {
         filter.remove(id);
     }
 
-    private boolean searchAllChildTasksAndCompareTo(Long idOfTaskToBeParent,
-                                                    List<TaskDependency> childTasksFollowingParentTask,
-                                                    Set<Long> alreadyVisitedNodes) {
+    private boolean searchAllChildTasksAndCompareRecursively(Long idOfTaskToBeParent,
+                                                             List<TaskDependency> childTasksFollowingParentTask,
+                                                             Set<Long> alreadyVisitedNodes) {
 
         if (childTasksFollowingParentTask.isEmpty()) {
             return false;
@@ -136,7 +136,7 @@ public class TaskService {
 
             alreadyVisitedNodes.add(childTaskId);
 
-            isChildTask = searchAllChildTasksAndCompareTo(idOfTaskToBeParent,
+            isChildTask = searchAllChildTasksAndCompareRecursively(idOfTaskToBeParent,
                                                     dependency.getChildTask().getChildTasksFollowingParentTask(),
                                                     alreadyVisitedNodes);
 
@@ -149,27 +149,27 @@ public class TaskService {
     }
 
     @Transactional
-    public void setTaskDone(Task existingTask) {
+    public void setTaskDone(Task updatingTask) {
 
-        boolean allParentTasksDone = existingTask.getParentTasksFollowedByChildTask()
+        boolean allParentTasksDone = updatingTask.getParentTasksFollowedByChildTask()
                             .stream()
-                            .allMatch(previousID -> previousID.getParentTask().getStatus().isDone());
+                            .allMatch(dependency -> dependency.getParentTask().getStatus().isDone());
 
         if (!allParentTasksDone) {
             throw new AllTasksNeedToBeDoneException();
         }
 
-        saveWithUpdatedTime(existingTask);
+        saveWithUpdatedTime(updatingTask);
     }
 
     @Transactional
     public void setTaskToDo(Task existingTask) {
 
-        setAllChildTasksTodoAndSave(existingTask.getChildTasksFollowingParentTask());
+        setAllChildTasksTodoAndSaveRecursively(existingTask.getChildTasksFollowingParentTask());
         saveWithUpdatedTime(existingTask);
     }
 
-    private void setAllChildTasksTodoAndSave(List<TaskDependency> childTasksFollowingParentTask) {
+    private void setAllChildTasksTodoAndSaveRecursively(List<TaskDependency> childTasksFollowingParentTask) {
 
         if(childTasksFollowingParentTask.isEmpty()) return;
 
@@ -182,7 +182,7 @@ public class TaskService {
 
             childTask.setStatus(TaskStatus.TODO);
             taskRepository.save(childTask);
-            setAllChildTasksTodoAndSave(childTask.getChildTasksFollowingParentTask());
+            setAllChildTasksTodoAndSaveRecursively(childTask.getChildTasksFollowingParentTask());
         }
     }
 

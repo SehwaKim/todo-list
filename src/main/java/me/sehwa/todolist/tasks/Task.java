@@ -1,5 +1,6 @@
 package me.sehwa.todolist.tasks;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import me.sehwa.todolist.taskDependencies.TaskDependency;
@@ -31,9 +32,14 @@ public class Task {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonBackReference
     @OneToMany(mappedBy = "childTask", fetch = FetchType.LAZY)
     private List<TaskDependency> parentTasksFollowedByChildTask = new ArrayList<>();
 
+    @JsonBackReference
     @OneToMany(mappedBy = "parentTask", fetch = FetchType.LAZY)
     private List<TaskDependency> childTasksFollowingParentTask = new ArrayList<>();
+
+    @Transient
+    private List<Long> parentTaskIds = new ArrayList<>();
 }

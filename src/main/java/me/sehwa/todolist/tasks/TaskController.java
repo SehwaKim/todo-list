@@ -1,5 +1,6 @@
 package me.sehwa.todolist.tasks;
 
+import lombok.extern.slf4j.Slf4j;
 import me.sehwa.todolist.exceptions.AllTasksNeedToBeDoneException;
 import me.sehwa.todolist.exceptions.BreakChainBetweenTasksException;
 import me.sehwa.todolist.exceptions.NoSuchTaskException;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping(value = "/api/tasks")
 public class TaskController {
@@ -26,6 +28,7 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity createTask(@RequestBody TaskDto taskDto) {
+        log.info(taskDto.toString());
 
         if (StringUtils.isEmpty(taskDto.getContent())) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
@@ -54,8 +57,17 @@ public class TaskController {
     public ResponseEntity getTasks(@RequestParam(defaultValue = "1") int page,
                                    @RequestParam(defaultValue = "8") int size) {
 
+        log.info("get tasks request");
+
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Page<Task> tasks = taskService.getTasks(PageRequest.of(page - 1, size, sort));
+
+        tasks.forEach(task ->
+            task.getParentTasksFollowedByChildTask().forEach(dependency ->
+                task.getParentTaskIds().add(dependency.getParentTask().getId())
+            )
+        );
+
         return ResponseEntity.ok(tasks);
     }
 
@@ -63,7 +75,16 @@ public class TaskController {
     public ResponseEntity getTask(@PathVariable Long id) {
 
         Optional<Task> optionalTask = taskService.getTaskById(id);
-        return optionalTask.isPresent() ? ResponseEntity.ok(optionalTask.get()) : ResponseEntity.notFound().build();
+        if (optionalTask.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Task task = optionalTask.get();
+        task.getParentTasksFollowedByChildTask().forEach(dependency ->
+                task.getParentTaskIds().add(dependency.getParentTask().getId())
+        );
+
+        return ResponseEntity.ok(task);
     }
 
     @PutMapping("/{id}")
