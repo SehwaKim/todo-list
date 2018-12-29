@@ -2,11 +2,21 @@ import React, { Component } from 'react';
 import PageTemplate from './components/PageTemplate';
 
 class App extends Component {
-  render() {
-      return (
-          <PageTemplate/>
-      );
-  }
+    constructor(props) {
+        super(props);
+        this.state = {
+            items: [],
+            showTodoInput: false
+        };
+    }
+
+    render() {
+        return (
+            <div>
+                <PageTemplate/>
+            </div>
+        );
+    }
 }
 
 export default App;

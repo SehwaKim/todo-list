@@ -13,6 +13,11 @@ code {
     monospace;
 }
 
-.todoArea {
-  background-color: rgba(255,255,255,.5);
+.check-box {
+    cursor: pointer;
+}
+
+mark {
+    background-color: #fff6d1;
+    color: #0576b9;
 }
