@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import axios from "axios/index";
 
 class TodoItem extends Component{
     constructor(props) {
@@ -6,12 +7,24 @@ class TodoItem extends Component{
         this.state = {
             updated: false
         };
+        this.deleteTask = this.deleteTask.bind(this);
     }
 
     componentDidMount() {
         if (this.props.updatedAt != null) {
             this.setState({update: true});
         }
+    }
+
+    deleteTask() {
+        axios.delete('/tasks/' + this.props.id)
+            .then((response) => {
+                this.props.removeTodoItem(this.props.id);
+            }).catch(function (error) {
+                console.log(error);
+            }).then(function () {
+                // always executed
+            });
     }
 
     render() {
@@ -73,39 +86,41 @@ class TodoItem extends Component{
         return (
             <div style={boxStyle} className="todoItem">
                 <table style={tableStyle}>
-                    <tr>
-                        <td style={checkboxCell}>
-                            <div>
-                                <input className="check-box" type="checkbox"/>
-                            </div>
-                        </td>
-                        <td style={checkboxCell}>
-                            <div>
-                                <input className="check-box" type="checkbox"/>
-                            </div>
-                        </td>
-                        <td style={forthCell}>
-                            <div>
-                                <span>no.{this.props.id}</span>
-                            </div>
-                        </td>
-                        <td style={secondCell}>
-                            <div>
-                                <div style={contentStyle}>{this.props.content}</div>
-                                <div style={referenceStyle}>{this.props.parentTaskIds}</div>
-                            </div>
-                        </td>
-                        <td style={dateCell}>
-                            <div>
-                                <div>{this.props.createdAt} <span style={smallWord}>(created)</span></div>
-                                {this.state.updated ?
-                                    <div>{this.props.updatedAt} <span style={smallWord}>(updated)</span></div> : null}
-                            </div>
-                        </td>
-                        <td style={forthCell}>
-                            <button style={XButtonStyle}>x</button>
-                        </td>
-                    </tr>
+                    <tbody>
+                        <tr>
+                            <td style={checkboxCell}>
+                                <div>
+                                    <input className="check-box" type="checkbox"/>
+                                </div>
+                            </td>
+                            <td style={checkboxCell}>
+                                <div>
+                                    <input className="check-box" type="checkbox"/>
+                                </div>
+                            </td>
+                            <td style={forthCell}>
+                                <div>
+                                    <span>no.{this.props.id}</span>
+                                </div>
+                            </td>
+                            <td style={secondCell}>
+                                <div>
+                                    <div style={contentStyle}>{this.props.content}</div>
+                                    <div style={referenceStyle}>{this.props.parentTaskIds}</div>
+                                </div>
+                            </td>
+                            <td style={dateCell}>
+                                <div>
+                                    <div>{this.props.createdAt} <span style={smallWord}>(created)</span></div>
+                                    {this.state.updated ?
+                                        <div>{this.props.updatedAt} <span style={smallWord}>(updated)</span></div> : null}
+                                </div>
+                            </td>
+                            <td style={forthCell}>
+                                <button style={XButtonStyle} onClick={this.deleteTask}>x</button>
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         );

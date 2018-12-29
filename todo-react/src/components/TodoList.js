@@ -7,8 +7,10 @@ class TodoList extends Component{
         super(props);
         this.state = {
             items: [],
+            itemRefs: new Map()
         };
-        this.itemRefs = new Map();
+        // this.itemRefs = new Map();
+        this.removeTodoItem = this.removeTodoItem.bind(this);
     }
 
     componentDidMount() {
@@ -18,19 +20,29 @@ class TodoList extends Component{
             }
         }).then((response) => {
             let tasks = [];
+            let refSet = new Map();
             for (let task of response.data.content) {
                 tasks.push(<TodoItem id={task.id} content={task.content} status={task.status}
                                      createdAt={task.createdAt} updatedAt={task.updatedAt}
                                      parentTaskIds={task.parentTaskIds}
+                                     removeTodoItem={this.removeTodoItem}
                                      key={Date.now() + task.id}
-                                     ref={(el => this.itemRefs.set(task.id, el))}/>);
+                                     ref={(el => refSet.set(task.id, el))}/>);
             }
-            this.setState({items: tasks});
+            this.setState({items: tasks, itemRefs: refSet});
 
         }).catch(function (error) {
             console.log(error);
         }).then(function () {
             // always executed
+        });
+    }
+
+    removeTodoItem(id) {
+        this.setState((prevState) => {
+            return {
+                items: prevState.items.filter(item => item.props.id !== id)
+            };
         });
     }
 
