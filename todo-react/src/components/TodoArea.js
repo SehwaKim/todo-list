@@ -10,6 +10,16 @@ class TodoArea extends Component{
             showAddTodoButton: true,
             showTodoInput: false
         };
+        this.addOrRemoveChosenTask = this.addOrRemoveChosenTask.bind(this);
+        this.chooseTasksModeOnOff = this.chooseTasksModeOnOff.bind(this);
+    }
+
+    addOrRemoveChosenTask(id, isChosen) {
+        this.todoInput.addOrRemoveTaskNumber(id, isChosen);
+    }
+
+    chooseTasksModeOnOff() {
+        this.todoList.toggleCheckboxDisability();
     }
 
     render() {
@@ -30,8 +40,8 @@ class TodoArea extends Component{
         };
         return (
             <div className="todoArea" style={areaStyle}>
-                <TodoInputArea/>
-                <TodoList/>
+                <TodoInputArea chooseTasksModeOnOff={this.chooseTasksModeOnOff} ref={t => this.todoInput = t}/>
+                <TodoList addOrRemoveChosenTask={this.addOrRemoveChosenTask} ref={t => this.todoList = t}/>
                 <Pagination/>
             </div>
         );

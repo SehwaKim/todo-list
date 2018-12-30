@@ -9,8 +9,8 @@ class TodoList extends Component{
             items: [],
             itemRefs: new Map()
         };
-        // this.itemRefs = new Map();
         this.removeTodoItem = this.removeTodoItem.bind(this);
+        this.toggleCheckboxDisability = this.toggleCheckboxDisability.bind(this);
     }
 
     componentDidMount() {
@@ -26,6 +26,7 @@ class TodoList extends Component{
                                      createdAt={task.createdAt} updatedAt={task.updatedAt}
                                      parentTaskIds={task.parentTaskIds}
                                      removeTodoItem={this.removeTodoItem}
+                                     addOrRemoveChosenTask={this.props.addOrRemoveChosenTask}
                                      key={Date.now() + task.id}
                                      ref={(el => refSet.set(task.id, el))}/>);
             }
@@ -36,6 +37,15 @@ class TodoList extends Component{
         }).then(function () {
             // always executed
         });
+    }
+
+    toggleCheckboxDisability() {
+        for(let item of this.state.itemRefs.values()) {
+            if(item === null) continue;
+            item.toggleRemoveButtonDisability();
+            item.taskChoosingCheckbox.toggleCheckboxDisabled();
+            item.statusCheckbox.toggleCheckboxDisabled();
+        }
     }
 
     removeTodoItem(id) {
@@ -53,7 +63,6 @@ class TodoList extends Component{
             margin: 'auto',
             overflow: 'hidden',
             borderRadius: '5px',
-            // borderStyle: 'dotted',
             top: 0,
             left: 0,
             bottom: 0,

@@ -6,14 +6,35 @@ class TodoInputArea extends Component{
         super(props);
         this.state = {
             chooseTasks: false,
-            taskNumber: [100, 101, 102],
-            taskNumberForShow: [' @1',' @2',' @3']
+            taskNumber: [],
+            taskNumberForShow: []
         };
         this.switchChooseTasksMode = this.switchChooseTasksMode.bind(this);
         this.createNewTodo = this.createNewTodo.bind(this);
+        this.addOrRemoveTaskNumber = this.addOrRemoveTaskNumber.bind(this);
     }
 
-    createNewTodo(e) {
+    addOrRemoveTaskNumber(id, isChosen) {
+        let str = ' @'+id;
+        if (isChosen) {
+            this.setState((prevState) => {
+                return {
+                    taskNumber: prevState.taskNumber.concat(id),
+                    taskNumberForShow: prevState.taskNumberForShow.concat(str)
+                }
+            });
+        } else {
+            this.setState((prevState) => {
+                return {
+                    taskNumber: prevState.taskNumber.filter(num => num !== id),
+                    taskNumberForShow: prevState.taskNumberForShow.filter(numStr => numStr !== str)
+                };
+            });
+        }
+
+    }
+
+    createNewTodo() {
         axios.post('/tasks',
             {
                 content: this._inputElement.value,
@@ -24,19 +45,31 @@ class TodoInputArea extends Component{
             })
             .catch(function (error) {
                 console.log(error);
+            }).then(() => {
+                this.switchChooseTasksMode();
             });
 
         this._inputElement.value = "";
-
-        e.preventDefault();//?
     }
 
     switchChooseTasksMode() {
-        this.setState((prevState) => {
-            return {
-                chooseTasks: !prevState.chooseTasks
-            }
-        });
+        if (this.state.chooseTasks) {
+            this.setState((prevState) => {
+                return {
+                    chooseTasks: !prevState.chooseTasks,
+                    taskNumber: [],
+                    taskNumberForShow: []
+                }
+            });
+        } else {
+            this.setState((prevState) => {
+                return {
+                    chooseTasks: !prevState.chooseTasks
+                }
+            });
+        }
+
+        this.props.chooseTasksModeOnOff();
     }
 
     render() {
