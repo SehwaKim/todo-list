@@ -12,6 +12,7 @@ class TodoArea extends Component{
         };
         this.addOrRemoveChosenTask = this.addOrRemoveChosenTask.bind(this);
         this.chooseTasksModeOnOff = this.chooseTasksModeOnOff.bind(this);
+        this.toggleUpdateMode = this.toggleUpdateMode.bind(this);
     }
 
     addOrRemoveChosenTask(id, isChosen) {
@@ -20,6 +21,10 @@ class TodoArea extends Component{
 
     chooseTasksModeOnOff() {
         this.todoList.toggleCheckboxDisability();
+    }
+
+    toggleUpdateMode(content, id) {
+        this.todoInput.switchUpdateTaskMode(content, id);
     }
 
     render() {
@@ -41,7 +46,9 @@ class TodoArea extends Component{
         return (
             <div className="todoArea" style={areaStyle}>
                 <TodoInputArea chooseTasksModeOnOff={this.chooseTasksModeOnOff} ref={t => this.todoInput = t}/>
-                <TodoList addOrRemoveChosenTask={this.addOrRemoveChosenTask} ref={t => this.todoList = t}/>
+                <TodoList addOrRemoveChosenTask={this.addOrRemoveChosenTask}
+                          toggleUpdateMode={this.toggleUpdateMode}
+                          ref={t => this.todoList = t}/>
                 <Pagination/>
             </div>
         );

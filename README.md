@@ -1,4 +1,3 @@
-# To-do List
-
-## 작업현황
-https://trello.com/b/SkDQr1sd/todo-list
+# todo list
+## 스크린샷
+## 빌드방법

@@ -91,15 +91,16 @@ public class TaskController {
     public ResponseEntity updateTask(@PathVariable Long id,
                                      @RequestBody TaskDto taskDto) {
 
+        log.info(taskDto.toString());
+
         Optional<Task> optionalTask = taskService.getTaskById(id);
         if (!optionalTask.isPresent()) {
             return ResponseEntity.notFound().build();
         }
 
         if (taskDto.isUpdateOnlyForStatus()) {
-
+            log.info(taskDto.getStatus().toString());
             if (taskDto.getStatus().isDone()) {
-
                 try {
 
                     taskService.setTaskDone(optionalTask.get());

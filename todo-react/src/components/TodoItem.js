@@ -11,12 +11,14 @@ class TodoItem extends Component{
             done: false,
             updated: false,
             updatedAt: this.props.updatedAt,
-            unRemovable: false
+            unRemovable: false,
+            updateMode: false
         };
         this.deleteTask = this.deleteTask.bind(this);
         this.changeTaskStatus = this.changeTaskStatus.bind(this);
         this.addOrRemoveChosenTask = this.addOrRemoveChosenTask.bind(this);
         this.toggleRemoveButtonDisability = this.toggleRemoveButtonDisability.bind(this);
+        this.toggleUpdateTaskMode = this.toggleUpdateTaskMode.bind(this);
     }
 
     componentWillMount() {
@@ -67,6 +69,20 @@ class TodoItem extends Component{
         this.setState({unRemovable: !this.state.unRemovable});
     }
 
+    toggleUpdateTaskMode() {
+        if (this.props.parentTaskIds.length > 0) {
+            this.props.toggleCheckboxDisability();
+        }
+        var content = this.state.updateMode ? "" : this.props.content;
+        this.props.toggleUpdateMode(content, this.props.id);
+        this.setState({updateMode: !this.state.updateMode});
+        // 기존 정보 가져올 필요는없다 이미 있는 id 들 가지고 체크박스 표시해주면 된다
+
+        // 주인공 아닌애들은 회색으로 될수없나???
+
+        // 모조리 todo로 바뀐애들은 put 메소드 리턴값으로 바뀐 아이디들만 가져와서 현재화면에 있는애들중에 일치하는애 있으면 다시 빠꾸시키기
+    }
+
     render() {
         var boxStyle = {
             margin: '10px',
@@ -79,7 +95,8 @@ class TodoItem extends Component{
         };
 
         var contentStyle = {
-            fontSize: '23px'
+            fontSize: '23px',
+            cursor: 'pointer'
         };
 
         var doneContentStyle = {
@@ -96,10 +113,17 @@ class TodoItem extends Component{
             color: '#7e7e7e'
         };
 
-        var XButtonStyle = {
+        var XButtonStyleActive = {
             fontSize: '26px',
             backgroundColor: 'white',
             color: '#DD4132',
+            border: '0px'
+        };
+
+        var XButtonStyleInActive = {
+            fontSize: '26px',
+            backgroundColor: 'white',
+            color: '#ffa2a2',
             border: '0px'
         };
 
@@ -158,7 +182,8 @@ class TodoItem extends Component{
                         </td>
                         <td style={secondCell}>
                             <div>
-                                <div style={this.state.done ? doneContentStyle : contentStyle}>
+                                <div style={this.state.done ? doneContentStyle : contentStyle}
+                                     onClick={this.state.done ? null : this.toggleUpdateTaskMode}>
                                     <span>{this.props.content}</span>
                                 </div>
                                 <div style={referenceStyle}>{this.props.parentTaskIds}</div>
@@ -172,7 +197,7 @@ class TodoItem extends Component{
                             </div>
                         </td>
                         <td style={forthCell}>
-                            <button style={XButtonStyle}
+                            <button style={this.state.unRemovable ? XButtonStyleInActive : XButtonStyleActive}
                                     onClick={this.deleteTask}
                                     disabled={this.state.unRemovable}>x</button>
                         </td>

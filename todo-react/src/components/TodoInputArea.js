@@ -6,12 +6,16 @@ class TodoInputArea extends Component{
         super(props);
         this.state = {
             chooseTasks: false,
+            updateTasks: false,
+            idForUpdate: 0,
             taskNumber: [],
             taskNumberForShow: []
         };
         this.switchChooseTasksMode = this.switchChooseTasksMode.bind(this);
         this.createNewTodo = this.createNewTodo.bind(this);
+        this.updateTodo = this.updateTodo.bind(this);
         this.addOrRemoveTaskNumber = this.addOrRemoveTaskNumber.bind(this);
+        this.switchUpdateTaskMode = this.switchUpdateTaskMode.bind(this);
     }
 
     addOrRemoveTaskNumber(id, isChosen) {
@@ -34,7 +38,7 @@ class TodoInputArea extends Component{
 
     }
 
-    createNewTodo() {
+    createNewTodo(e) {
         axios.post('/tasks',
             {
                 content: this._inputElement.value,
@@ -49,7 +53,25 @@ class TodoInputArea extends Component{
                 this.switchChooseTasksMode();
             });
 
-        this._inputElement.value = "";
+        // this.inputBox._inputElement.value = "";
+        // e.preventDefault();
+    }
+
+    updateTodo(e) {
+        axios.put('/tasks/' + this.state.idForUpdate,
+            {
+                content: this._inputElement.value,
+                idGroupOfTasksToBeParent: this.state.taskNumber
+            })
+            .then(function (response) {
+                console.log(response);
+            })
+            .catch(function (error) {
+                console.log(error);
+            }).then(() => {
+            this.switchChooseTasksMode();
+        });
+        e.preventDefault();
     }
 
     switchChooseTasksMode() {
@@ -72,11 +94,18 @@ class TodoInputArea extends Component{
         this.props.chooseTasksModeOnOff();
     }
 
-    render() {
-        var outerDivStyle = {
-            // marginBottom: '20px'
-        };
+    switchUpdateTaskMode = (content, id) => {
+        this._inputElement.value = content;
+        this.setState((prevState) => {
+            return {
+                chooseTasks: !prevState.chooseTasks,
+                updateTasks: !prevState.updateTasks,
+                idForUpdate: id
+            }
+        });
+    }
 
+    render() {
         var inputAreaStyle = {
             textAlign: 'center'
         };
@@ -89,6 +118,16 @@ class TodoInputArea extends Component{
             backgroundColor: '#0066FF',
             color: '#FFF',
             border: 'thin solid #0066FF'
+        };
+
+        var updateButtonStyle = {
+            padding: '10px',
+            fontSize: '20px',
+            margin: '10px',
+            marginLeft: '15px',
+            backgroundColor: '#ff9928',
+            color: '#FFF',
+            border: 'thin solid #ff9928'
         };
 
         var inputStyle = {
@@ -104,30 +143,46 @@ class TodoInputArea extends Component{
         };
 
         var taskNumbers = {
-            // fontWeight: 'bold'
+            fontWeight: 'bold'
+        };
+
+        var taskNumbersArea = {
+            marginLeft: '15px',
+            marginBottom: '5px',
+            textAlign: 'left'
+
         };
 
         var taskSelectionArea = {
-            marginTop: '20px',
-            marginLeft: '20px',
-            marginBottom: '10px'
+            marginLeft: '170px',
+            marginBottom: '5px',
+            textAlign: 'left'
         };
 
         return (
-            <div style={outerDivStyle}>
+            <div>
                 <div style={inputAreaStyle}>
-                    <form onSubmit={this.createNewTodo}>
+                    <form onSubmit={this.state.updateTasks ? this.updateTodo : this.createNewTodo}>
                         <input type="text" style={inputStyle}
                                placeholder="Todo Item"
                                ref={(i) => this._inputElement = i}/>
-                        <button type="submit" style={buttonStyle}>Add Todo</button>
+                        {
+                            this.state.updateTasks ?
+                                <button type="submit" style={updateButtonStyle}>수정하기</button>
+                                : <button type="submit" style={buttonStyle}>일정추가</button>
+                        }
                     </form>
+                    <div>
+                        <div style={taskSelectionArea}>
+                            <input className="check-box" type="checkbox" onChange={this.switchChooseTasksMode}/>
+                            <span style={smallSizeFont}>참조 Todo 추가</span>
+                        </div>
+                        <div style={taskNumbersArea}>
+                            <span style={{...smallSizeFont, ...taskNumbers}}><mark>{this.state.taskNumberForShow}</mark></span>
+                        </div>
+                    </div>
                 </div>
-                <div style={taskSelectionArea}>
-                    <input className="check-box" type="checkbox" onChange={this.switchChooseTasksMode}/>
-                    <span style={smallSizeFont}>사전조건설정</span>
-                    <span style={{...smallSizeFont, ...taskNumbers}}><mark>{this.state.taskNumberForShow}</mark></span>
-                </div>
+
             </div>
         );
     }

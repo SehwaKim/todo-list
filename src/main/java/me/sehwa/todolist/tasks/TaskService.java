@@ -65,7 +65,7 @@ public class TaskService {
         List<TaskDependency> parentTasksFollowedByChildTask = updatingTask.getParentTasksFollowedByChildTask();
 
         Set<Long> filterComparingOldAndNew = new HashSet<>();
-        parentTasksFollowedByChildTask.forEach(parentTask -> filterComparingOldAndNew.add(parentTask.getId()));
+        parentTasksFollowedByChildTask.forEach(dependency -> filterComparingOldAndNew.add(dependency.getParentTask().getId()));
 
         List<Long> idGroupOfCandidatesForParentTask = taskDto.getIdGroupOfTasksToBeParent();
 
@@ -159,14 +159,16 @@ public class TaskService {
             throw new AllTasksNeedToBeDoneException();
         }
 
+        updatingTask.setStatus(TaskStatus.DONE);
         saveWithUpdatedTime(updatingTask);
     }
 
     @Transactional
-    public void setTaskToDo(Task existingTask) {
+    public void setTaskToDo(Task updatingTask) {
 
-        setAllChildTasksTodoAndSaveRecursively(existingTask.getChildTasksFollowingParentTask());
-        saveWithUpdatedTime(existingTask);
+        setAllChildTasksTodoAndSaveRecursively(updatingTask.getChildTasksFollowingParentTask());
+        updatingTask.setStatus(TaskStatus.TODO);
+        saveWithUpdatedTime(updatingTask);
     }
 
     private void setAllChildTasksTodoAndSaveRecursively(List<TaskDependency> childTasksFollowingParentTask) {

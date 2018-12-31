@@ -27,6 +27,9 @@ class TodoList extends Component{
                                      parentTaskIds={task.parentTaskIds}
                                      removeTodoItem={this.removeTodoItem}
                                      addOrRemoveChosenTask={this.props.addOrRemoveChosenTask}
+                                     toggleCheckboxDisability={this.toggleCheckboxDisability}
+                                     checkAllParentTasks={this.checkAllParentTasks}
+                                     toggleUpdateMode={this.props.toggleUpdateMode}
                                      key={Date.now() + task.id}
                                      ref={(el => refSet.set(task.id, el))}/>);
             }
@@ -46,6 +49,12 @@ class TodoList extends Component{
             item.taskChoosingCheckbox.toggleCheckboxDisabled();
             item.statusCheckbox.toggleCheckboxDisabled();
         }
+    }
+
+    checkAllParentTasks(taskIdArray) {
+        /*for(let id of taskIdArray){
+
+        }*/
     }
 
     removeTodoItem(id) {
