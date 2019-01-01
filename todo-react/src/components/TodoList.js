@@ -8,7 +8,8 @@ class TodoList extends Component{
         super(props);
         this.state = {
             items: [],
-            itemRefs: new Map()
+            itemRefs: new Map(),
+            chooseTaskMode: false
         };
         this.removeTodoItem = this.removeTodoItem.bind(this);
         this.toggleCheckboxDisability = this.toggleCheckboxDisability.bind(this);
@@ -27,7 +28,6 @@ class TodoList extends Component{
                 page: page
             }
         }).then((response) => {
-            console.log(response.data);
             this.pagination.setPaginationInfo(response.data);
 
             let tasks = [];
@@ -44,7 +44,7 @@ class TodoList extends Component{
                                      toggleUpdateMode={this.props.toggleUpdateMode}
                                      forceSetItemTodo={this.forceSetItemTodo}
                                      togglePopup={this.props.togglePopup}
-                                     key={Date.now() + task.id}
+                                     key={Date.now() + '@' + task.id}
                                      ref={(el => refSet.set(task.id, el))}/>);
             }
             this.setState({items: tasks, itemRefs: refSet});
@@ -52,7 +52,6 @@ class TodoList extends Component{
         }).catch(function (response) {
             console.log(response);
         }).then(() => {
-            console.log(this.state.items);
         });
     }
 

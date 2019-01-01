@@ -5,6 +5,7 @@ class Pagination extends Component{
         super(props);
         this.state = {
             pageItems: [],
+            pageItemRefs: new Map(),
             page: 0,
             pageSize: 0,
             totalElements: 0,
@@ -15,10 +16,10 @@ class Pagination extends Component{
             hasNext: false
         };
         this.setPaginationInfo = this.setPaginationInfo.bind(this);
-        this.switchPage = this.switchPage.bind(this);
+        this.selectPage = this.selectPage.bind(this);
     }
 
-    switchPage(num) {
+    selectPage(num) {
         this.props.getTasksByPage(num);
     }
 
@@ -49,21 +50,28 @@ class Pagination extends Component{
         });
 
         var pageItems = [];
+        let refSet = new Map();
 
         if (hasPrev) {
-            pageItems.push(<span className="paging" onClick={() => this.switchPage(startPage - 1)}>
+            pageItems.push(<span className="page"
+                                 onClick={() => this.selectPage(startPage - 1)}
+                                 key={Date.now() + 'p'}>
                             {'[prev] '}
                             </span>);
         }
 
         for (let num=startPage; num<=endPage; num++) {
-            pageItems.push(<span className="paging" onClick={() => this.switchPage(num)}>
+            pageItems.push(<span className={num === page ? "selectedPage" : "page"}
+                                 onClick={num === page ? null : () => this.selectPage(num)}
+                                 key={Date.now() + num}
+                                 ref={(el => refSet.set(num, el))}>
                             {'[' + num + '] '}
                             </span>);
         }
 
         if (hasNext) {
-            pageItems.push(<span className="paging" onClick={() => this.switchPage(endPage + 1)}>
+            pageItems.push(<span className="page" onClick={() => this.selectPage(endPage + 1)}
+                            key={Date.now() + 'n'}>
                             {'[next]'}
                             </span>);
         }

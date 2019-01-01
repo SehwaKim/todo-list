@@ -17,8 +17,12 @@ code {
     cursor: pointer;
 }
 
-.paging {
+.page {
     cursor: pointer;
+}
+
+.selectedPage {
+    font-weight: bold;
 }
 
 mark {
