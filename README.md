@@ -1,4 +1,6 @@
 # todo list
+## 소개
+스프링 부트와 리액트로 만든 todo list 앱
 ## 빌드환경
 - jdk 1.8
 - Maven 3.5.3
