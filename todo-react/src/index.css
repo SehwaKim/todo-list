@@ -17,6 +17,10 @@ code {
     cursor: pointer;
 }
 
+.paging {
+    cursor: pointer;
+}
+
 mark {
     background-color: #fff6d1;
     color: #0576b9;

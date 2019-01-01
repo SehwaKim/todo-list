@@ -42,4 +42,7 @@ public class Task {
 
     @Transient
     private List<Long> parentTaskIds = new ArrayList<>();
+
+    @Transient
+    private String parentTaskIdsString;
 }

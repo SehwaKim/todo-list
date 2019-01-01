@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import TodoItem from './TodoItem';
+import Pagination from './Pagination';
 
 class TodoList extends Component{
     constructor(props) {
@@ -13,20 +14,29 @@ class TodoList extends Component{
         this.toggleCheckboxDisability = this.toggleCheckboxDisability.bind(this);
         this.checkAllParentTasks = this.checkAllParentTasks.bind(this);
         this.forceSetItemTodo = this.forceSetItemTodo.bind(this);
+        this.getTasksByPage = this.getTasksByPage.bind(this);
     }
 
     componentDidMount() {
+        this.getTasksByPage(1);
+    }
+
+    getTasksByPage(page) {
         axios.get('/tasks', {
             params: {
-                page: 1
+                page: page
             }
         }).then((response) => {
+            console.log(response.data);
+            this.pagination.setPaginationInfo(response.data);
+
             let tasks = [];
             let refSet = new Map();
             for (let task of response.data.content) {
                 tasks.push(<TodoItem id={task.id} content={task.content} status={task.status}
                                      createdAt={task.createdAt} updatedAt={task.updatedAt}
                                      parentTaskIds={task.parentTaskIds}
+                                     parentTaskIdsString={task.parentTaskIdsString}
                                      removeTodoItem={this.removeTodoItem}
                                      addOrRemoveChosenTask={this.props.addOrRemoveChosenTask}
                                      toggleCheckboxDisability={this.toggleCheckboxDisability}
@@ -41,8 +51,8 @@ class TodoList extends Component{
 
         }).catch(function (response) {
             console.log(response);
-        }).then(function () {
-            // always executed
+        }).then(() => {
+            console.log(this.state.items);
         });
     }
 
@@ -96,6 +106,8 @@ class TodoList extends Component{
         return (
             <div style={listStyle}>
                 {this.state.items}
+                <Pagination ref={p => this.pagination = p}
+                            getTasksByPage={this.getTasksByPage}/>
             </div>
         );
     }

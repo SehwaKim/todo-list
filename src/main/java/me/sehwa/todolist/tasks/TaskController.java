@@ -55,15 +55,22 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity getTasks(@RequestParam(defaultValue = "1") int page,
-                                   @RequestParam(defaultValue = "8") int size) {
+                                   @RequestParam(defaultValue = "6") int size) {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Page<Task> tasks = taskService.getTasks(PageRequest.of(page - 1, size, sort));
 
-        tasks.forEach(task ->
-            task.getParentTasksFollowedByChildTask().forEach(dependency ->
-                task.getParentTaskIds().add(dependency.getParentTask().getId())
-            )
+        tasks.forEach(task -> {
+                StringBuilder sb = new StringBuilder();
+
+                task.getParentTasksFollowedByChildTask()
+                        .forEach(dependency ->{
+                                task.getParentTaskIds().add(dependency.getParentTask().getId());
+                                sb.append(" @"+dependency.getParentTask().getId());
+                        });
+
+                task.setParentTaskIdsString(sb.toString());
+            }
         );
 
         return ResponseEntity.ok(tasks);
@@ -78,9 +85,13 @@ public class TaskController {
         }
 
         Task task = optionalTask.get();
-        task.getParentTasksFollowedByChildTask().forEach(dependency ->
-                task.getParentTaskIds().add(dependency.getParentTask().getId())
+        StringBuilder sb = new StringBuilder();
+        task.getParentTasksFollowedByChildTask().forEach(dependency ->{
+                task.getParentTaskIds().add(dependency.getParentTask().getId());
+                sb.append(" @"+dependency.getParentTask().getId());
+            }
         );
+        task.setParentTaskIdsString(sb.toString());
 
         return ResponseEntity.ok(task);
     }

@@ -61,7 +61,8 @@ class TodoItem extends Component{
         this.setState({
             done: !this.state.done,
             updated: true,
-            updatedAt: moment().format("YYYY-MM-DD")
+            updatedAt: moment().format("YYYY-MM-DD"),
+            modifyDisability: !this.state.done
         });
     }
 
@@ -111,7 +112,7 @@ class TodoItem extends Component{
     render() {
         var boxStyle = {
             margin: '10px',
-            padding: '18px',
+            padding: '15px',
             borderStyle: 'solid',
             borderRadius: '5px',
             borderColor: 'lightGray',
@@ -216,7 +217,7 @@ class TodoItem extends Component{
                                         </svg>
                                     </span>
                                 </div>
-                                <div style={referenceStyle}>{this.props.parentTaskIds}</div>
+                                <div style={referenceStyle}>{this.props.parentTaskIdsString}</div>
                             </div>
                         </td>
                         <td style={dateCell}>

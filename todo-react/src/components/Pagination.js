@@ -1,6 +1,76 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 
 class Pagination extends Component{
+    constructor(props) {
+        super(props);
+        this.state = {
+            pageItems: [],
+            page: 0,
+            pageSize: 0,
+            totalElements: 0,
+            totalPages: 0,
+            startPage: 1,
+            endPage: 1,
+            hasPrev: false,
+            hasNext: false
+        };
+        this.setPaginationInfo = this.setPaginationInfo.bind(this);
+        this.switchPage = this.switchPage.bind(this);
+    }
+
+    switchPage(num) {
+        this.props.getTasksByPage(num);
+    }
+
+    setPaginationInfo(data) {
+        let page = data.pageable.pageNumber + 1;
+        let pageSize = data.pageable.pageSize;
+        let totalElements = data.totalElements;
+        let totalPages = data.totalPages;
+
+        let startPage = parseInt((page / (5 + 1))) * 5 + 1;
+        let endPage = startPage + 5 - 1;
+        if(endPage > totalPages){
+            endPage = totalPages;
+        }
+
+        let hasPrev = (startPage - 1) > 0;
+        let hasNext = (endPage+1) <= totalPages;
+
+        this.setState({
+            page: page,
+            pageSize: pageSize,
+            totalElements: totalElements,
+            totalPages: totalPages,
+            startPage: startPage,
+            endPage: endPage,
+            hasPrev: hasPrev,
+            hasNext: hasNext
+        });
+
+        var pageItems = [];
+
+        if (hasPrev) {
+            pageItems.push(<span className="paging" onClick={() => this.switchPage(startPage - 1)}>
+                            {'< '}
+                            </span>);
+        }
+
+        for (let num=startPage; num<=endPage; num++) {
+            pageItems.push(<span className="paging" onClick={() => this.switchPage(num)}>
+                            {'[' + num + '] '}
+                            </span>);
+        }
+
+        if (hasNext) {
+            pageItems.push(<span className="paging" onClick={() => this.switchPage(endPage + 1)}>
+                            {'>'}
+                            </span>);
+        }
+
+        this.setState({pageItems: pageItems});
+    }
+
     render() {
         var pageStyle = {
             width: '100%',
@@ -11,7 +81,7 @@ class Pagination extends Component{
         };
         return (
             <div style={pageStyle}>
-                1 | 2 | 3 | 4 | 5
+                {this.state.pageItems}
             </div>
         );
     }

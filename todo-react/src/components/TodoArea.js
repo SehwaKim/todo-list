@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import TodoInputArea from './TodoInputArea';
 import TodoList from './TodoList';
-import Pagination from './Pagination';
+import Pagination from "./Pagination";
 
 class TodoArea extends Component{
     constructor(props) {
@@ -75,7 +75,6 @@ class TodoArea extends Component{
                           toggleUpdateMode={this.toggleUpdateMode}
                           togglePopup={this.props.togglePopup}
                           ref={t => this.todoList = t}/>
-                <Pagination/>
             </div>
         );
     }
