@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import TodoInputArea from './TodoInputArea';
 import TodoList from './TodoList';
-import Pagination from "./Pagination";
 
 class TodoArea extends Component{
     constructor(props) {

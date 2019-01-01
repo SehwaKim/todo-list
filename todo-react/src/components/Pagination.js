@@ -52,7 +52,7 @@ class Pagination extends Component{
 
         if (hasPrev) {
             pageItems.push(<span className="paging" onClick={() => this.switchPage(startPage - 1)}>
-                            {'< '}
+                            {'[prev] '}
                             </span>);
         }
 
@@ -64,7 +64,7 @@ class Pagination extends Component{
 
         if (hasNext) {
             pageItems.push(<span className="paging" onClick={() => this.switchPage(endPage + 1)}>
-                            {'>'}
+                            {'[next]'}
                             </span>);
         }
 
