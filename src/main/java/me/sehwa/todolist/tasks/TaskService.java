@@ -25,12 +25,12 @@ public class TaskService {
     private TaskDependencyRepository taskDependencyRepository;
 
     @Transactional
-    public void createNewTaskAndTaskDependencies(Task task, List<Long> IdGroupOfTasksToBeParent) {
+    public Task createNewTaskAndTaskDependencies(Task task, List<Long> IdGroupOfTasksToBeParent) {
 
         Task savedTask = taskRepository.save(task);
 
         if (IdGroupOfTasksToBeParent.isEmpty()) {
-            return;
+            return savedTask;
         }
 
         for (Long Id : IdGroupOfTasksToBeParent) {
@@ -42,6 +42,8 @@ public class TaskService {
                                         .childTask(savedTask).parentTask(taskToBeParent).build();
             taskDependencyRepository.save(dependency);
         }
+
+        return savedTask;
     }
 
     @Transactional(readOnly = true)
@@ -200,13 +202,14 @@ public class TaskService {
     }
 
     @Transactional
-    public void removeTask(Task removingTask) {
-
+    public boolean removeTask(Task removingTask) {
         if (!removingTask.getChildTasksFollowingParentTask().isEmpty()) {
             throw new BreakChainBetweenTasksException();
         }
 
         taskDependencyRepository.deleteAllByChildTaskId(removingTask.getId());
         taskRepository.delete(removingTask);
+
+        return true;
     }
 }

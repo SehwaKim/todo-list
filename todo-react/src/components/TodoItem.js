@@ -197,7 +197,7 @@ class TodoItem extends Component{
                         <td style={checkboxCell}>
                             <div>
                                 <Checkbox checked={false}
-                                          isDisable={false}
+                                          isDisable={true}
                                           forStatus={false}
                                           addOrRemoveChosenTask={this.addOrRemoveChosenTask}
                                           ref={checkbox => this.taskChoosingCheckbox = checkbox}

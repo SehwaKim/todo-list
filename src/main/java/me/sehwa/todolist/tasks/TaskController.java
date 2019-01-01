@@ -80,7 +80,7 @@ public class TaskController {
     public ResponseEntity getTask(@PathVariable Long id) {
 
         Optional<Task> optionalTask = taskService.getTaskById(id);
-        if (optionalTask.isPresent()) {
+        if (!optionalTask.isPresent()) {
             return ResponseEntity.notFound().build();
         }
 
