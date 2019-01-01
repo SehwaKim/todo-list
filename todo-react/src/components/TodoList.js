@@ -12,6 +12,7 @@ class TodoList extends Component{
         this.removeTodoItem = this.removeTodoItem.bind(this);
         this.toggleCheckboxDisability = this.toggleCheckboxDisability.bind(this);
         this.checkAllParentTasks = this.checkAllParentTasks.bind(this);
+        this.forceSetItemTodo = this.forceSetItemTodo.bind(this);
     }
 
     componentDidMount() {
@@ -31,6 +32,7 @@ class TodoList extends Component{
                                      toggleCheckboxDisability={this.toggleCheckboxDisability}
                                      checkAllParentTasks={this.checkAllParentTasks}
                                      toggleUpdateMode={this.props.toggleUpdateMode}
+                                     forceSetItemTodo={this.forceSetItemTodo}
                                      key={Date.now() + task.id}
                                      ref={(el => refSet.set(task.id, el))}/>);
             }
@@ -41,6 +43,12 @@ class TodoList extends Component{
         }).then(function () {
             // always executed
         });
+    }
+
+    forceSetItemTodo(id) {
+        if (this.state.itemRefs.has(id) && this.state.itemRefs.get(id) !== null) {
+            this.state.itemRefs.get(id).toggleStatus();
+        }
     }
 
     toggleCheckboxDisability(exceptId) {

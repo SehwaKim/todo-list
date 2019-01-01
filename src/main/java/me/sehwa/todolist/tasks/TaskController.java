@@ -57,8 +57,6 @@ public class TaskController {
     public ResponseEntity getTasks(@RequestParam(defaultValue = "1") int page,
                                    @RequestParam(defaultValue = "8") int size) {
 
-        log.info("get tasks request");
-
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Page<Task> tasks = taskService.getTasks(PageRequest.of(page - 1, size, sort));
 
@@ -90,7 +88,6 @@ public class TaskController {
     @PutMapping("/{id}")
     public ResponseEntity updateTask(@PathVariable Long id,
                                      @RequestBody TaskDto taskDto) {
-
         log.info(taskDto.toString());
 
         Optional<Task> optionalTask = taskService.getTaskById(id);
@@ -99,11 +96,12 @@ public class TaskController {
         }
 
         if (taskDto.isUpdateOnlyForStatus()) {
-            log.info(taskDto.getStatus().toString());
+            TaskDto updatedTaskDto = null;
+
             if (taskDto.getStatus().isDone()) {
                 try {
 
-                    taskService.setTaskDone(optionalTask.get());
+                    updatedTaskDto = taskService.setTaskDone(optionalTask.get());
 
                 } catch (AllTasksNeedToBeDoneException ex) {
 
@@ -112,23 +110,25 @@ public class TaskController {
                 }
 
             } else {
-                taskService.setTaskToDo(optionalTask.get());
+                updatedTaskDto = taskService.setTaskToDo(optionalTask.get());
             }
 
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(updatedTaskDto);
         }
 
         try {
-
-            taskService.updateTask(optionalTask.get(), taskDto);
+            Task updatedTask = taskService.updateTask(optionalTask.get(), taskDto);
+            updatedTask.getParentTasksFollowedByChildTask()
+                    .forEach(
+                            dependency -> updatedTask.getParentTaskIds()
+                                    .add(dependency.getParentTask().getId())
+                    );
+            return ResponseEntity.ok(updatedTask);
 
         } catch (RuntimeException ex) {
-
             Map<String, String> message = Collections.singletonMap("message", ex.getMessage());
             return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
-
-        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")

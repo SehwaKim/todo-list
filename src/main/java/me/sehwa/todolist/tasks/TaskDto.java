@@ -12,6 +12,7 @@ public class TaskDto {
     private String content;
     private TaskStatus status;
     private List<Long> idGroupOfTasksToBeParent;
+    private List<Long> idGroupOfChildTasksTodo;
 
     private boolean updateOnlyForStatus;
 }

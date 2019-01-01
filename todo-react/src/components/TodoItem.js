@@ -22,6 +22,7 @@ class TodoItem extends Component{
         this.toggleRemoveButtonDisability = this.toggleRemoveButtonDisability.bind(this);
         this.toggleUpdateTaskMode = this.toggleUpdateTaskMode.bind(this);
         this.toggleModifyDisability = this.toggleModifyDisability.bind(this);
+        this.toggleStatus = this.toggleStatus.bind(this);
     }
 
     componentWillMount() {
@@ -33,24 +34,35 @@ class TodoItem extends Component{
         }
     }
 
-    changeTaskStatus() {
+    changeTaskStatus(e) {
         axios.put('/tasks/' + this.props.id,
             {
                 status: this.state.done ? 'TODO' : 'DONE',
                 updateOnlyForStatus: true
             })
             .then((response) => {
-                this.setState({
-                    done: !this.state.done,
-                    updated: true,
-                    updatedAt: moment().format("YYYY-MM-DD")
-                });
-                // this.statusCheckbox.toggleCheckboxChange();
+                let updatedTask = response.data;
+                if (updatedTask.status === 'TODO') {
+                    if (updatedTask.idGroupOfChildTasksTodo.length > 0) {
+                        for(let id of updatedTask.idGroupOfChildTasksTodo) {
+                            this.props.forceSetItemTodo(id);
+                        }
+                    }
+                }
+                this.toggleStatus();
             })
             .catch((error) => {
-
                 // 메세지 띄우기 - "참조하는 TODO가 모두 완료되어야 합니다."
             });
+        e.preventDefault();
+    }
+
+    toggleStatus() {
+        this.setState({
+            done: !this.state.done,
+            updated: true,
+            updatedAt: moment().format("YYYY-MM-DD")
+        });
     }
 
     addOrRemoveChosenTask(isChosen) {

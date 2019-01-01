@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class TaskService {
@@ -60,7 +57,7 @@ public class TaskService {
     }
 
     @Transactional
-    public void updateTask(Task updatingTask, TaskDto taskDto) {
+    public Task updateTask(Task updatingTask, TaskDto taskDto) {
 
         List<TaskDependency> parentTasksFollowedByChildTask = updatingTask.getParentTasksFollowedByChildTask();
 
@@ -98,7 +95,8 @@ public class TaskService {
         deleteRemainingOldDependencies(updatingTask, filterComparingOldAndNew);
 
         updatingTask.setContent(taskDto.getContent());
-        saveWithUpdatedTime(updatingTask);
+
+        return saveWithUpdatedTime(updatingTask);
     }
 
     private void deleteRemainingOldDependencies(Task updatingTask, Set<Long> filter) {
@@ -149,7 +147,7 @@ public class TaskService {
     }
 
     @Transactional
-    public void setTaskDone(Task updatingTask) {
+    public TaskDto setTaskDone(Task updatingTask) {
 
         boolean allParentTasksDone = updatingTask.getParentTasksFollowedByChildTask()
                             .stream()
@@ -160,18 +158,24 @@ public class TaskService {
         }
 
         updatingTask.setStatus(TaskStatus.DONE);
-        saveWithUpdatedTime(updatingTask);
+        Task updatedTask = saveWithUpdatedTime(updatingTask);
+
+        return TaskDto.builder().status(updatedTask.getStatus()).build();
     }
 
     @Transactional
-    public void setTaskToDo(Task updatingTask) {
+    public TaskDto setTaskToDo(Task updatingTask) {
+        List<Long> affectedChildTaskIds = new ArrayList<>();
+        setAllChildTasksTodoAndSaveRecursively(updatingTask.getChildTasksFollowingParentTask(), affectedChildTaskIds);
 
-        setAllChildTasksTodoAndSaveRecursively(updatingTask.getChildTasksFollowingParentTask());
         updatingTask.setStatus(TaskStatus.TODO);
-        saveWithUpdatedTime(updatingTask);
+        Task updatedTask = saveWithUpdatedTime(updatingTask);
+
+        return TaskDto.builder().status(updatedTask.getStatus()).idGroupOfChildTasksTodo(affectedChildTaskIds).build();
     }
 
-    private void setAllChildTasksTodoAndSaveRecursively(List<TaskDependency> childTasksFollowingParentTask) {
+    private void setAllChildTasksTodoAndSaveRecursively(List<TaskDependency> childTasksFollowingParentTask,
+                                                        List<Long> affectedChildTaskIds) {
 
         if(childTasksFollowingParentTask.isEmpty()) return;
 
@@ -184,14 +188,15 @@ public class TaskService {
 
             childTask.setStatus(TaskStatus.TODO);
             taskRepository.save(childTask);
-            setAllChildTasksTodoAndSaveRecursively(childTask.getChildTasksFollowingParentTask());
+            affectedChildTaskIds.add(childTask.getId());
+            setAllChildTasksTodoAndSaveRecursively(childTask.getChildTasksFollowingParentTask(), affectedChildTaskIds);
         }
     }
 
-    private void saveWithUpdatedTime(Task existingTask) {
+    private Task saveWithUpdatedTime(Task existingTask) {
 
         existingTask.setUpdatedAt(LocalDateTime.now());
-        taskRepository.save(existingTask);
+        return taskRepository.save(existingTask);
     }
 
     @Transactional
