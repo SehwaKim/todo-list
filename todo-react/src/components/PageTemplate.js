@@ -1,10 +1,25 @@
 import React, { Component } from 'react';
 import TodoArea from './TodoArea';
+import Popup from './Popup';
 
 class PageTemplate extends Component{
+    constructor(props) {
+        super(props);
+        this.state = {
+            showAllTodoNeedToBeDone: false
+        };
+        this.togglePopup = this.togglePopup.bind(this);
+    }
+
+    togglePopup() {
+        this.setState({
+            showAllTodoNeedToBeDone: !this.state.showAllTodoNeedToBeDone
+        });
+        this.todoArea.toggleShowAllTodoNeedToBeDonePopup();
+    }
+
     render() {
         var pageStyle = {
-            // backgroundColor: '#111',
             height: '100%',
             width: '100%',
             position: 'fixed',
@@ -13,9 +28,14 @@ class PageTemplate extends Component{
             overflow: 'hidden',
             verticalAlign: 'middle'
         };
+
         return (
             <div style={pageStyle}>
-                <TodoArea/>
+                <TodoArea ref={t => this.todoArea = t}
+                          togglePopup={this.togglePopup}/>
+                {this.state.showAllTodoNeedToBeDone ?
+                    <Popup togglePopup={this.togglePopup}/>
+                    : null}
             </div>
         );
     }

@@ -33,13 +33,14 @@ class TodoList extends Component{
                                      checkAllParentTasks={this.checkAllParentTasks}
                                      toggleUpdateMode={this.props.toggleUpdateMode}
                                      forceSetItemTodo={this.forceSetItemTodo}
+                                     togglePopup={this.props.togglePopup}
                                      key={Date.now() + task.id}
                                      ref={(el => refSet.set(task.id, el))}/>);
             }
             this.setState({items: tasks, itemRefs: refSet});
 
-        }).catch(function (error) {
-            console.log(error);
+        }).catch(function (response) {
+            console.log(response);
         }).then(function () {
             // always executed
         });

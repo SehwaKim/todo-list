@@ -52,7 +52,7 @@ class TodoItem extends Component{
                 this.toggleStatus();
             })
             .catch((error) => {
-                // 메세지 띄우기 - "참조하는 TODO가 모두 완료되어야 합니다."
+                this.props.togglePopup();
             });
         e.preventDefault();
     }

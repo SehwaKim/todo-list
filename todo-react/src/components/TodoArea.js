@@ -8,11 +8,13 @@ class TodoArea extends Component{
         super(props);
         this.state = {
             showAddTodoButton: true,
-            showTodoInput: false
+            showTodoInput: false,
+            showAllTodoNeedToBeDonePopup: false
         };
         this.addOrRemoveChosenTask = this.addOrRemoveChosenTask.bind(this);
         this.chooseTasksModeOnOff = this.chooseTasksModeOnOff.bind(this);
         this.toggleUpdateMode = this.toggleUpdateMode.bind(this);
+        this.toggleShowAllTodoNeedToBeDonePopup = this.toggleShowAllTodoNeedToBeDonePopup.bind(this);
     }
 
     addOrRemoveChosenTask(id, isChosen) {
@@ -25,6 +27,10 @@ class TodoArea extends Component{
 
     toggleUpdateMode(content, id) {
         this.todoInput.switchUpdateTaskMode(content, id);
+    }
+
+    toggleShowAllTodoNeedToBeDonePopup() {
+        this.setState({showAllTodoNeedToBeDonePopup: !this.state.showAllTodoNeedToBeDonePopup});
     }
 
     render() {
@@ -43,11 +49,31 @@ class TodoArea extends Component{
             bottom: 0,
             right: 0
         };
+
+        var areaStyleWithOpacity = {
+            height: '85%',
+            width: '40%',
+            padding: '15px',
+            margin: 'auto',
+            overflow: 'hidden',
+            borderRadius: '5px',
+            position: 'absolute',
+            borderStyle: 'dotted',
+            borderColor: 'rgba(255,255,255,.5)',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+            opacity: 0.4
+        };
+
         return (
-            <div className="todoArea" style={areaStyle}>
+            <div className="todoArea"
+                 style={this.state.showAllTodoNeedToBeDonePopup ? areaStyleWithOpacity : areaStyle}>
                 <TodoInputArea chooseTasksModeOnOff={this.chooseTasksModeOnOff} ref={t => this.todoInput = t}/>
                 <TodoList addOrRemoveChosenTask={this.addOrRemoveChosenTask}
                           toggleUpdateMode={this.toggleUpdateMode}
+                          togglePopup={this.props.togglePopup}
                           ref={t => this.todoList = t}/>
                 <Pagination/>
             </div>
