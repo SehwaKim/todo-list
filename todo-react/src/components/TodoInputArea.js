@@ -71,7 +71,7 @@ class TodoInputArea extends Component{
             }).then(() => {
             this.switchChooseTasksMode();
         });
-        e.preventDefault();
+        // e.preventDefault();
     }
 
     switchChooseTasksMode() {
@@ -139,7 +139,8 @@ class TodoInputArea extends Component{
 
         var smallSizeFont = {
             fontSize: '17px',
-            marginRight: '30px'
+            marginRight: '30px',
+            cursor: 'pointer'
         };
 
         var taskNumbers = {
@@ -154,7 +155,7 @@ class TodoInputArea extends Component{
         };
 
         var taskSelectionArea = {
-            marginLeft: '170px',
+            marginLeft: '480px',
             marginBottom: '5px',
             textAlign: 'left'
         };
@@ -174,8 +175,12 @@ class TodoInputArea extends Component{
                     </form>
                     <div>
                         <div style={taskSelectionArea}>
-                            <input className="check-box" type="checkbox" onChange={this.switchChooseTasksMode}/>
-                            <span style={smallSizeFont}>참조 Todo 추가</span>
+                            <label style={smallSizeFont}>
+                                <input className="check-box" type="checkbox"
+                                       onChange={this.switchChooseTasksMode}
+                                        disabled={this.state.updateTasks}/>
+                                참조 Todo 추가
+                            </label>
                         </div>
                         <div style={taskNumbersArea}>
                             <span style={{...smallSizeFont, ...taskNumbers}}><mark>{this.state.taskNumberForShow}</mark></span>

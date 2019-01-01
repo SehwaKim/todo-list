@@ -11,6 +11,7 @@ class TodoList extends Component{
         };
         this.removeTodoItem = this.removeTodoItem.bind(this);
         this.toggleCheckboxDisability = this.toggleCheckboxDisability.bind(this);
+        this.checkAllParentTasks = this.checkAllParentTasks.bind(this);
     }
 
     componentDidMount() {
@@ -42,19 +43,24 @@ class TodoList extends Component{
         });
     }
 
-    toggleCheckboxDisability() {
-        for(let item of this.state.itemRefs.values()) {
-            if(item === null) continue;
-            item.toggleRemoveButtonDisability();
-            item.taskChoosingCheckbox.toggleCheckboxDisabled();
-            item.statusCheckbox.toggleCheckboxDisabled();
+    toggleCheckboxDisability(exceptId) {
+        for(let id of this.state.itemRefs.keys()) {
+            if(this.state.itemRefs.get(id) === null) continue;
+            let todoItem = this.state.itemRefs.get(id);
+            todoItem.toggleRemoveButtonDisability();
+            todoItem.toggleModifyStatusDisability();
+            if(id === exceptId) continue;
+            todoItem.toggleModifyDisability();
+            todoItem.taskChoosingCheckbox.toggleCheckboxDisabled();
         }
     }
 
-    checkAllParentTasks(taskIdArray) {
-        /*for(let id of taskIdArray){
-
-        }*/
+    checkAllParentTasks(parentTaskIds) {
+        for(let id of parentTaskIds){
+            if (this.state.itemRefs.has(id) && this.state.itemRefs.get(id) !== null) {
+                this.state.itemRefs.get(id).taskChoosingCheckbox.selectOrUnselectForParentTask();
+            }
+        }
     }
 
     removeTodoItem(id) {

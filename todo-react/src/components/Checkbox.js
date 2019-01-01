@@ -13,10 +13,10 @@ class Checkbox extends Component {
     }
 
     takeActionOnClick = () => {
-        if (this.props.forStatus) {
+        /*if (this.props.forStatus) {
             this.props.changeTaskStatus();
             return;
-        }
+        }*/
         this.selectOrUnselectForParentTask();
     }
 
@@ -45,15 +45,21 @@ class Checkbox extends Component {
     }
 
     render() {
+        var labelStyle = {
+            fontSize: '18px',
+            cursor: 'pointer'
+        };
+
         return (
             <div className="checkbox">
-                <label>
+                <label style={labelStyle}>
                     <input
                         type="checkbox"
                         checked={this.state.isChecked}
                         onChange={this.takeActionOnClick}
                         disabled={this.state.isDisable}
                     />
+                    no.{this.props.id}
                 </label>
             </div>
         );

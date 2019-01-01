@@ -12,13 +12,16 @@ class TodoItem extends Component{
             updated: false,
             updatedAt: this.props.updatedAt,
             unRemovable: false,
-            updateMode: false
+            updateMode: false,
+            modifyDisability: false,
+            modifyStatusDisability: false
         };
         this.deleteTask = this.deleteTask.bind(this);
         this.changeTaskStatus = this.changeTaskStatus.bind(this);
         this.addOrRemoveChosenTask = this.addOrRemoveChosenTask.bind(this);
         this.toggleRemoveButtonDisability = this.toggleRemoveButtonDisability.bind(this);
         this.toggleUpdateTaskMode = this.toggleUpdateTaskMode.bind(this);
+        this.toggleModifyDisability = this.toggleModifyDisability.bind(this);
     }
 
     componentWillMount() {
@@ -26,7 +29,7 @@ class TodoItem extends Component{
             this.setState({update: true});
         }
         if (this.props.status === 'DONE') {
-            this.setState({done: true});
+            this.setState({done: true, modifyDisability: true});
         }
     }
 
@@ -42,7 +45,7 @@ class TodoItem extends Component{
                     updated: true,
                     updatedAt: moment().format("YYYY-MM-DD")
                 });
-                this.statusCheckbox.toggleCheckboxChange();
+                // this.statusCheckbox.toggleCheckboxChange();
             })
             .catch((error) => {
 
@@ -69,10 +72,20 @@ class TodoItem extends Component{
         this.setState({unRemovable: !this.state.unRemovable});
     }
 
+    toggleModifyDisability() {
+        if(this.state.done) return;
+        this.setState({modifyDisability: !this.state.modifyDisability});
+    }
+
+    toggleModifyStatusDisability() {
+        this.setState({modifyStatusDisability: !this.state.modifyStatusDisability});
+    }
+
     toggleUpdateTaskMode() {
         if (this.props.parentTaskIds.length > 0) {
-            this.props.toggleCheckboxDisability();
+            this.props.checkAllParentTasks(this.props.parentTaskIds); // 근데 수정하기로 들어갈때만 표시해야됨...
         }
+        this.props.toggleCheckboxDisability(this.props.id);
         var content = this.state.updateMode ? "" : this.props.content;
         this.props.toggleUpdateMode(content, this.props.id);
         this.setState({updateMode: !this.state.updateMode});
@@ -101,6 +114,7 @@ class TodoItem extends Component{
 
         var doneContentStyle = {
             fontSize: '23px',
+            cursor: 'pointer',
             textDecoration: 'line-through'
         };
 
@@ -117,7 +131,8 @@ class TodoItem extends Component{
             fontSize: '26px',
             backgroundColor: 'white',
             color: '#DD4132',
-            border: '0px'
+            border: '0px',
+            cursor: 'pointer'
         };
 
         var XButtonStyleInActive = {
@@ -132,7 +147,7 @@ class TodoItem extends Component{
         };
 
         var checkboxCell = {
-            width: '3%'
+            width: '11%'
         };
 
         var secondCell = {
@@ -146,7 +161,16 @@ class TodoItem extends Component{
             textAlign: 'left'
         };
 
-        var forthCell = {
+        var modifyModeSvg = {
+            marginLeft: '10px'
+        };
+
+        var unModifyModeSvg = {
+            marginLeft: '10px',
+            opacity: 0.1
+        };
+
+        var buttonCellStyle = {
             width: '5%',
             fontSize: '18px',
             textAlign: 'right'
@@ -159,32 +183,26 @@ class TodoItem extends Component{
                     <tr>
                         <td style={checkboxCell}>
                             <div>
-                                <Checkbox checked={this.state.done}
-                                          isDisable={false}
-                                          forStatus={true}
-                                          changeTaskStatus={this.changeTaskStatus}
-                                          ref={checkbox => this.statusCheckbox = checkbox}/>
-                            </div>
-                        </td>
-                        <td style={checkboxCell}>
-                            <div>
                                 <Checkbox checked={false}
                                           isDisable={true}
                                           forStatus={false}
                                           addOrRemoveChosenTask={this.addOrRemoveChosenTask}
-                                          ref={checkbox => this.taskChoosingCheckbox = checkbox}/>
-                            </div>
-                        </td>
-                        <td style={forthCell}>
-                            <div>
-                                <span>no.{this.props.id}</span>
+                                          ref={checkbox => this.taskChoosingCheckbox = checkbox}
+                                          id={this.props.id}/>
                             </div>
                         </td>
                         <td style={secondCell}>
                             <div>
-                                <div style={this.state.done ? doneContentStyle : contentStyle}
-                                     onClick={this.state.done ? null : this.toggleUpdateTaskMode}>
-                                    <span>{this.props.content}</span>
+                                <div style={this.state.done ? doneContentStyle : contentStyle}>
+                                    <span
+                                        onDoubleClick={this.state.modifyStatusDisability ? null : this.changeTaskStatus}>
+                                        {this.props.content}</span>
+                                    <span style={this.state.modifyDisability ? unModifyModeSvg : modifyModeSvg}
+                                          onClick={this.state.modifyDisability ? null : this.toggleUpdateTaskMode}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 8 8">
+                                            <path d="M6 0l-1 1 2 2 1-1-2-2zm-2 2l-4 4v2h2l4-4-2-2z" />
+                                        </svg>
+                                    </span>
                                 </div>
                                 <div style={referenceStyle}>{this.props.parentTaskIds}</div>
                             </div>
@@ -196,7 +214,7 @@ class TodoItem extends Component{
                                     <div>{this.state.updatedAt} <span style={smallWord}>(updated)</span></div> : null}
                             </div>
                         </td>
-                        <td style={forthCell}>
+                        <td style={buttonCellStyle}>
                             <button style={this.state.unRemovable ? XButtonStyleInActive : XButtonStyleActive}
                                     onClick={this.deleteTask}
                                     disabled={this.state.unRemovable}>x</button>
