@@ -9,13 +9,15 @@ class TodoList extends Component{
         this.state = {
             items: [],
             itemRefs: new Map(),
-            chooseTaskMode: false
+            chooseTaskMode: false,
+            // currentUpdatingId: 0
         };
         this.removeTodoItem = this.removeTodoItem.bind(this);
         this.toggleCheckboxDisability = this.toggleCheckboxDisability.bind(this);
         this.checkAllParentTasks = this.checkAllParentTasks.bind(this);
         this.forceSetItemTodo = this.forceSetItemTodo.bind(this);
         this.getTasksByPage = this.getTasksByPage.bind(this);
+        this.toggleUpdateMode = this.toggleUpdateMode.bind(this);
     }
 
     componentDidMount() {
@@ -32,16 +34,19 @@ class TodoList extends Component{
 
             let tasks = [];
             let refSet = new Map();
+
             for (let task of response.data.content) {
                 tasks.push(<TodoItem id={task.id} content={task.content} status={task.status}
                                      createdAt={task.createdAt} updatedAt={task.updatedAt}
                                      parentTaskIds={task.parentTaskIds}
                                      parentTaskIdsString={task.parentTaskIdsString}
+                                     chooseTaskMode={this.state.chooseTaskMode}
+                                     // currentUpdating={this.state.currentUpdatingId === task.id}
                                      removeTodoItem={this.removeTodoItem}
                                      addOrRemoveChosenTask={this.props.addOrRemoveChosenTask}
                                      toggleCheckboxDisability={this.toggleCheckboxDisability}
                                      checkAllParentTasks={this.checkAllParentTasks}
-                                     toggleUpdateMode={this.props.toggleUpdateMode}
+                                     toggleUpdateMode={this.toggleUpdateMode}
                                      forceSetItemTodo={this.forceSetItemTodo}
                                      togglePopup={this.props.togglePopup}
                                      key={Date.now() + '@' + task.id}
@@ -55,6 +60,11 @@ class TodoList extends Component{
         });
     }
 
+    toggleUpdateMode(content, id) {
+        this.props.toggleUpdateMode(content, id);
+        this.setState({currentUpdatingId: id});
+    }
+
     forceSetItemTodo(id) {
         if (this.state.itemRefs.has(id) && this.state.itemRefs.get(id) !== null) {
             this.state.itemRefs.get(id).toggleStatus();
@@ -62,6 +72,8 @@ class TodoList extends Component{
     }
 
     toggleCheckboxDisability(exceptId) {
+        this.setState({chooseTaskMode: !this.state.chooseTaskMode});
+
         for(let id of this.state.itemRefs.keys()) {
             if(this.state.itemRefs.get(id) === null) continue;
             let todoItem = this.state.itemRefs.get(id);

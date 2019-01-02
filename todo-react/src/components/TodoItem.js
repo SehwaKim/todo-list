@@ -11,10 +11,11 @@ class TodoItem extends Component{
             done: false,
             updated: false,
             updatedAt: this.props.updatedAt,
-            unRemovable: false,
             updateMode: false,
-            modifyDisability: false,
-            modifyStatusDisability: false
+            unRemovable: this.props.chooseTaskMode,
+            // modifyDisability: this.props.chooseTaskMode && !this.props.currentUpdating,
+            modifyDisability: this.props.chooseTaskMode,
+            modifyStatusDisability: this.props.chooseTaskMode
         };
         this.deleteTask = this.deleteTask.bind(this);
         this.changeTaskStatus = this.changeTaskStatus.bind(this);
@@ -197,7 +198,7 @@ class TodoItem extends Component{
                         <td style={checkboxCell}>
                             <div>
                                 <Checkbox checked={false}
-                                          isDisable={true}
+                                          isDisable={!this.props.chooseTaskMode}
                                           forStatus={false}
                                           addOrRemoveChosenTask={this.addOrRemoveChosenTask}
                                           ref={checkbox => this.taskChoosingCheckbox = checkbox}
