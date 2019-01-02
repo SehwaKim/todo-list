@@ -5,6 +5,39 @@ insert into task (id, content, status, created_at) values (103, '장갑 끼기',
 insert into task (id, content, status, created_at) values (104, '이어폰 챙기기', 'TODO', now());
 insert into task (id, content, status, created_at) values (105, '토스트 먹기', 'TODO', now());
 
+insert into task (content, status, created_at) values ('todo 1', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 2', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 3', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 4', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 5', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 6', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 7', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 8', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 9', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 10', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 11', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 12', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 13', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 14', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 15', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 16', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 17', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 18', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 19', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 20', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 21', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 22', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 23', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 24', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 25', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 26', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 27', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 28', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 29', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 30', 'TODO', now());
+insert into task (content, status, created_at) values ('todo 31', 'TODO', now());
+
+
 insert into task_dependency (parent_task_id, child_task_id) values (100, 105);
 insert into task_dependency (parent_task_id, child_task_id) values (101, 104);
 insert into task_dependency (parent_task_id, child_task_id) values (102, 103);
