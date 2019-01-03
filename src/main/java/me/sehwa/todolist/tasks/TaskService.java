@@ -25,15 +25,15 @@ public class TaskService {
     private TaskDependencyRepository taskDependencyRepository;
 
     @Transactional
-    public Task createNewTaskAndTaskDependencies(Task task, List<Long> IdGroupOfTasksToBeParent) {
+    public Task createNewTaskAndTaskDependencies(Task task, List<Long> idGroupOfTasksToBeParent) {
 
         Task savedTask = taskRepository.save(task);
 
-        if (IdGroupOfTasksToBeParent.isEmpty()) {
+        if (idGroupOfTasksToBeParent.isEmpty()) {
             return savedTask;
         }
 
-        for (Long Id : IdGroupOfTasksToBeParent) {
+        for (Long Id : idGroupOfTasksToBeParent) {
 
             Optional<Task> optionalTask = taskRepository.findById(Id);
             Task taskToBeParent = optionalTask.orElseThrow(NoSuchTaskException::new);
