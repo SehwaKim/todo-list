@@ -76,7 +76,7 @@ class TodoItem extends Component{
             .then((response) => {
                 this.props.removeTodoItem(this.props.id);
             }).catch(function (error) {
-                console.log(error);
+                alert("다른 TODO로부터 참조되고 있는 TODO는 삭제할 수 없습니다.");
             }).then(function () {
                 // always executed
             });

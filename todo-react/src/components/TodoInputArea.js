@@ -67,7 +67,7 @@ class TodoInputArea extends Component{
                 console.log(response.data);
             })
             .catch(function (error) {
-                console.log(error);
+                alert("이 TODO를 참조하고 있는 TODO는 조건으로 추가할 수 없습니다.");
             }).then(() => {
             this.switchChooseTasksMode();
         });
