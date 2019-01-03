@@ -61,6 +61,111 @@ public class TaskService {
     @Transactional
     public Task updateTask(Task updatingTask, TaskDto taskDto) {
 
+        List<TaskDependency> updatedParentTaskDependency
+                = getUpdatedParentTaskDependency(updatingTask, taskDto.getIdGroupOfTasksToBeParent());
+
+        updatingTask.setParentTasksFollowedByChildTask(updatedParentTaskDependency);
+        updatingTask.setContent(taskDto.getContent());
+
+        return saveWithUpdatedTime(updatingTask);
+    }
+
+    private List<TaskDependency> getUpdatedParentTaskDependency(Task updatingTask, List<Long> idGroupOfTasksToBeParent) {
+        List<TaskDependency> updatedParentTaskDependency = new ArrayList<>();
+
+        List<Long> newlyAddedParentTaskIds
+                = getNewlyAddedParentTaskIds(updatingTask.getParentTasksFollowedByChildTask(), idGroupOfTasksToBeParent);
+        List<Long> wantToDeleteParentTaskIds
+                = getNotSelectedOldParentTaskIds(updatingTask.getParentTasksFollowedByChildTask(), idGroupOfTasksToBeParent);
+
+        createNewDependenciesAndAddToList(newlyAddedParentTaskIds, updatedParentTaskDependency, updatingTask);
+        deleteNotSelectedOldDependencies(wantToDeleteParentTaskIds, updatingTask);
+
+        return updatedParentTaskDependency;
+    }
+
+    private List<Long> getNewlyAddedParentTaskIds(List<TaskDependency> currentParentTaskDependencies,
+                                                  List<Long> idGroupOfTasksToBeParent) {
+
+        List<Long> newlyAddedParentTaskIds = new ArrayList<>();
+
+        Set<Long> filterComparingOldAndNew = new HashSet<>();
+        currentParentTaskDependencies.forEach(
+                dependency -> filterComparingOldAndNew.add(dependency.getParentTask().getId())
+        );
+
+        for (Long id : idGroupOfTasksToBeParent) {
+            boolean newlyAddedParent = filterComparingOldAndNew.add(id);
+            if (newlyAddedParent) {
+                newlyAddedParentTaskIds.add(id);
+            }
+        }
+
+        return newlyAddedParentTaskIds;
+    }
+
+    private List<Long> getNotSelectedOldParentTaskIds(List<TaskDependency> currentParentTaskDependencies,
+                                                    List<Long> idGroupOfTasksToBeParent) {
+
+        Set<Long> notSelectedOldParentTasks = new HashSet<>();
+        currentParentTaskDependencies.forEach(
+                dependency -> notSelectedOldParentTasks.add(dependency.getParentTask().getId())
+        );
+
+        for (Long id : idGroupOfTasksToBeParent) {
+            notSelectedOldParentTasks.remove(id);
+        }
+
+        return new ArrayList<>(notSelectedOldParentTasks);
+    }
+
+    private void createNewDependenciesAndAddToList(List<Long> newlyAddedParentTaskIds,
+                                                   List<TaskDependency> updatedParentTaskDependency,
+                                                   Task updatingTask) {
+
+        for (Long id : newlyAddedParentTaskIds) {
+            Task taskToBeParent = getTaskToBeParent(id, updatingTask);
+            TaskDependency dependency = TaskDependency
+                                        .builder()
+                                        .parentTask(taskToBeParent)
+                                        .childTask(updatingTask).build();
+            dependency = taskDependencyRepository.save(dependency);
+            updatedParentTaskDependency.add(dependency);
+        }
+    }
+
+    private void deleteNotSelectedOldDependencies(List<Long> wantToDeleteParentTaskIds,
+                                                        Task updatingTask) {
+        for (Long id : wantToDeleteParentTaskIds) {
+            taskDependencyRepository.deleteByChildTaskIdAndParentTaskId(updatingTask.getId(), id);
+        }
+    }
+
+    private Task getTaskToBeParent(Long id, Task updatingTask) {
+        Optional<Task> optionalTask = taskRepository.findById(id);
+        Task task = optionalTask.orElseThrow(NoSuchTaskException::new);
+
+        if (isChildTaskOf(updatingTask, id)) {
+            throw new CircularReferenceException();
+        }
+
+        return task;
+    }
+
+    private boolean isChildTaskOf(Task updatingTask, Long id) {
+        boolean isChildTask = false;
+
+        Set<Long> alreadyVisitedNodes = new HashSet<>();
+
+        isChildTask = searchAllChildTasksAndCompareRecursively(id,
+                                                               updatingTask.getChildTasksFollowingParentTask(),
+                                                               alreadyVisitedNodes);
+
+        return isChildTask;
+    }
+
+    /*public Task updateTask2(Task updatingTask, TaskDto taskDto) {
+
         List<TaskDependency> parentTasksFollowedByChildTask = updatingTask.getParentTasksFollowedByChildTask();
 
         Set<Long> filterComparingOldAndNew = new HashSet<>();
@@ -109,7 +214,7 @@ public class TaskService {
 
     private void removeParentTaskIdFromFilter(Long id, Set<Long> filter) {
         filter.remove(id);
-    }
+    }*/
 
     private boolean searchAllChildTasksAndCompareRecursively(Long idOfTaskToBeParent,
                                                              List<TaskDependency> childTasksFollowingParentTask,
