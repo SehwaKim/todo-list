@@ -13,12 +13,8 @@ class Checkbox extends Component {
     }
 
     takeActionOnClick = () => {
-        /*if (this.props.forStatus) {
-            this.props.changeTaskStatus();
-            return;
-        }*/
         this.selectOrUnselectForParentTask();
-    }
+    };
 
     toggleCheckboxChange() {
         this.setState((prev) => ({

@@ -36,11 +36,14 @@ class TodoList extends Component{
             let refSet = new Map();
 
             for (let task of response.data.content) {
+                let temporarySelection = this.props.isTemporarilySelected(task.id);
+
                 tasks.push(<TodoItem id={task.id} content={task.content} status={task.status}
                                      createdAt={task.createdAt} updatedAt={task.updatedAt}
                                      parentTaskIds={task.parentTaskIds}
                                      parentTaskIdsString={task.parentTaskIdsString}
                                      chooseTaskMode={this.state.chooseTaskMode}
+                                     temporarySelection={temporarySelection}
                                      // currentUpdating={this.state.currentUpdatingId === task.id}
                                      removeTodoItem={this.removeTodoItem}
                                      addOrRemoveChosenTask={this.props.addOrRemoveChosenTask}

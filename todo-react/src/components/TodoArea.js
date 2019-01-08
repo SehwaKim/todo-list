@@ -14,6 +14,11 @@ class TodoArea extends Component{
         this.chooseTasksModeOnOff = this.chooseTasksModeOnOff.bind(this);
         this.toggleUpdateMode = this.toggleUpdateMode.bind(this);
         this.toggleShowAllTodoNeedToBeDonePopup = this.toggleShowAllTodoNeedToBeDonePopup.bind(this);
+        this.isTemporarilySelected = this.isTemporarilySelected.bind(this);
+    }
+
+    isTemporarilySelected(id) {
+        return this.todoInput.isTemporarilySelected(id);
     }
 
     addOrRemoveChosenTask(id, isChosen) {
@@ -73,6 +78,7 @@ class TodoArea extends Component{
                 <TodoList addOrRemoveChosenTask={this.addOrRemoveChosenTask}
                           toggleUpdateMode={this.toggleUpdateMode}
                           togglePopup={this.props.togglePopup}
+                          isTemporarilySelected={this.isTemporarilySelected}
                           ref={t => this.todoList = t}/>
             </div>
         );

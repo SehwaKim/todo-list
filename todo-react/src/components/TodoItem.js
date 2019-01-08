@@ -197,9 +197,8 @@ class TodoItem extends Component{
                     <tr>
                         <td style={checkboxCell}>
                             <div>
-                                <Checkbox checked={false}
+                                <Checkbox checked={this.props.temporarySelection}
                                           isDisable={!this.props.chooseTaskMode}
-                                          forStatus={false}
                                           addOrRemoveChosenTask={this.addOrRemoveChosenTask}
                                           ref={checkbox => this.taskChoosingCheckbox = checkbox}
                                           id={this.props.id}/>

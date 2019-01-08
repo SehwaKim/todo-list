@@ -16,6 +16,11 @@ class TodoInputArea extends Component{
         this.updateTodo = this.updateTodo.bind(this);
         this.addOrRemoveTaskNumber = this.addOrRemoveTaskNumber.bind(this);
         this.switchUpdateTaskMode = this.switchUpdateTaskMode.bind(this);
+        this.isTemporarilySelected = this.isTemporarilySelected.bind(this);
+    }
+
+    isTemporarilySelected(id) {
+        return this.state.taskNumber.includes(id);
     }
 
     addOrRemoveTaskNumber(id, isChosen) {
