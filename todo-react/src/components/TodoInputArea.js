@@ -39,9 +39,17 @@ class TodoInputArea extends Component{
     }
 
     createNewTodo(e) {
+        let content = this._inputElement.value;
+
+        if (content === "") {
+            alert("내용을 입력해주십시오");
+            e.preventDefault();
+            return;
+        }
+
         axios.post('/tasks',
             {
-                content: this._inputElement.value,
+                content: content,
                 idGroupOfTasksToBeParent: this.state.taskNumber
             })
             .then(function (response) {
