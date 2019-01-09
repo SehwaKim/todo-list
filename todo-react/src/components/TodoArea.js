@@ -15,6 +15,7 @@ class TodoArea extends Component{
         this.toggleUpdateMode = this.toggleUpdateMode.bind(this);
         this.toggleShowAllTodoNeedToBeDonePopup = this.toggleShowAllTodoNeedToBeDonePopup.bind(this);
         this.isTemporarilySelected = this.isTemporarilySelected.bind(this);
+        this.getCurrentlyUpdatingId = this.getCurrentlyUpdatingId.bind(this);
     }
 
     isTemporarilySelected(id) {
@@ -35,6 +36,10 @@ class TodoArea extends Component{
 
     toggleShowAllTodoNeedToBeDonePopup() {
         this.setState({showAllTodoNeedToBeDonePopup: !this.state.showAllTodoNeedToBeDonePopup});
+    }
+
+    getCurrentlyUpdatingId() {
+        return this.todoInput.state.idForUpdate;
     }
 
     render() {
@@ -79,6 +84,7 @@ class TodoArea extends Component{
                           toggleUpdateMode={this.toggleUpdateMode}
                           togglePopup={this.props.togglePopup}
                           isTemporarilySelected={this.isTemporarilySelected}
+                          getCurrentlyUpdatingId={this.getCurrentlyUpdatingId}
                           ref={t => this.todoList = t}/>
             </div>
         );

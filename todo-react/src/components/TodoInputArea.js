@@ -40,7 +40,6 @@ class TodoInputArea extends Component{
                 };
             });
         }
-
     }
 
     createNewTodo(e) {
@@ -113,7 +112,7 @@ class TodoInputArea extends Component{
             return {
                 chooseTasks: !prevState.chooseTasks,
                 updateTasks: !prevState.updateTasks,
-                idForUpdate: id
+                idForUpdate: this.state.idForUpdate === id ? 0 : id
             }
         });
     }

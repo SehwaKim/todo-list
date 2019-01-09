@@ -11,9 +11,8 @@ class TodoItem extends Component{
             done: false,
             updated: false,
             updatedAt: this.props.updatedAt,
-            updateMode: false,
+            updateMode: this.props.currentlyUpdating,
             unRemovable: this.props.chooseTaskMode,
-            // modifyDisability: this.props.chooseTaskMode && !this.props.currentUpdating,
             modifyDisability: this.props.chooseTaskMode,
             modifyStatusDisability: this.props.chooseTaskMode
         };
@@ -32,6 +31,15 @@ class TodoItem extends Component{
         }
         if (this.props.status === 'DONE') {
             this.setState({done: true, modifyDisability: true});
+        }
+    }
+
+    componentDidMount() {
+        if (this.state.updateMode) {
+            this.taskChoosingCheckbox.toggleCheckboxDisabled();
+            this.setState({
+                modifyDisability: false
+            });
         }
     }
 
@@ -97,15 +105,12 @@ class TodoItem extends Component{
 
     toggleUpdateTaskMode() {
         if (this.props.parentTaskIds.length > 0) {
-            this.props.checkAllParentTasks(this.props.parentTaskIds); // 근데 수정하기로 들어갈때만 표시해야됨...
+            this.props.checkAllParentTasks(this.props.parentTaskIds);
         }
         this.props.toggleCheckboxDisability(this.props.id);
         var content = this.state.updateMode ? "" : this.props.content;
         this.props.toggleUpdateMode(content, this.props.id);
         this.setState({updateMode: !this.state.updateMode});
-        // 기존 정보 가져올 필요는없다 이미 있는 id 들 가지고 체크박스 표시해주면 된다
-
-        // 주인공 아닌애들은 회색으로 될수없나???
 
         // 모조리 todo로 바뀐애들은 put 메소드 리턴값으로 바뀐 아이디들만 가져와서 현재화면에 있는애들중에 일치하는애 있으면 다시 빠꾸시키기
     }
@@ -208,10 +213,13 @@ class TodoItem extends Component{
                             <div>
                                 <div style={this.state.done ? doneContentStyle : contentStyle}>
                                     <span
-                                        onDoubleClick={this.state.modifyStatusDisability ? null : this.changeTaskStatus}>
+                                        onDoubleClick={
+                                            this.state.modifyStatusDisability
+                                                ? null : this.changeTaskStatus}>
                                         {this.props.content}</span>
-                                    <span style={this.state.modifyDisability ? unModifyModeSvg : modifyModeSvg}
-                                          onClick={this.state.modifyDisability ? null : this.toggleUpdateTaskMode}>
+                                    <span
+                                        style={this.state.modifyDisability ? unModifyModeSvg : modifyModeSvg}
+                                        onClick={this.state.modifyDisability ? null : this.toggleUpdateTaskMode}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 8 8">
                                             <path d="M6 0l-1 1 2 2 1-1-2-2zm-2 2l-4 4v2h2l4-4-2-2z" />
                                         </svg>
@@ -228,9 +236,10 @@ class TodoItem extends Component{
                             </div>
                         </td>
                         <td style={buttonCellStyle}>
-                            <button style={this.state.unRemovable ? XButtonStyleInActive : XButtonStyleActive}
-                                    onClick={this.deleteTask}
-                                    disabled={this.state.unRemovable}>x</button>
+                            <button
+                                style={this.state.unRemovable ? XButtonStyleInActive : XButtonStyleActive}
+                                onClick={this.deleteTask}
+                                disabled={this.state.unRemovable}>x</button>
                         </td>
                     </tr>
                     </tbody>

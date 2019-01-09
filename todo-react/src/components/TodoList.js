@@ -9,8 +9,7 @@ class TodoList extends Component{
         this.state = {
             items: [],
             itemRefs: new Map(),
-            chooseTaskMode: false,
-            // currentUpdatingId: 0
+            chooseTaskMode: false
         };
         this.removeTodoItem = this.removeTodoItem.bind(this);
         this.toggleCheckboxDisability = this.toggleCheckboxDisability.bind(this);
@@ -35,25 +34,27 @@ class TodoList extends Component{
             let tasks = [];
             let refSet = new Map();
 
+            let currentlyUpdatingId = this.props.getCurrentlyUpdatingId();
+
             for (let task of response.data.content) {
                 let temporarySelection = this.props.isTemporarilySelected(task.id);
 
                 tasks.push(<TodoItem id={task.id} content={task.content} status={task.status}
-                                     createdAt={task.createdAt} updatedAt={task.updatedAt}
-                                     parentTaskIds={task.parentTaskIds}
-                                     parentTaskIdsString={task.parentTaskIdsString}
-                                     chooseTaskMode={this.state.chooseTaskMode}
-                                     temporarySelection={temporarySelection}
-                                     // currentUpdating={this.state.currentUpdatingId === task.id}
-                                     removeTodoItem={this.removeTodoItem}
-                                     addOrRemoveChosenTask={this.props.addOrRemoveChosenTask}
-                                     toggleCheckboxDisability={this.toggleCheckboxDisability}
-                                     checkAllParentTasks={this.checkAllParentTasks}
-                                     toggleUpdateMode={this.toggleUpdateMode}
-                                     forceSetItemTodo={this.forceSetItemTodo}
-                                     togglePopup={this.props.togglePopup}
-                                     key={Date.now() + '@' + task.id}
-                                     ref={(el => refSet.set(task.id, el))}/>);
+                                 createdAt={task.createdAt} updatedAt={task.updatedAt}
+                                 parentTaskIds={task.parentTaskIds}
+                                 parentTaskIdsString={task.parentTaskIdsString}
+                                 chooseTaskMode={this.state.chooseTaskMode}
+                                 currentlyUpdating={currentlyUpdatingId === task.id}
+                                 temporarySelection={temporarySelection}
+                                 removeTodoItem={this.removeTodoItem}
+                                 addOrRemoveChosenTask={this.props.addOrRemoveChosenTask}
+                                 toggleCheckboxDisability={this.toggleCheckboxDisability}
+                                 checkAllParentTasks={this.checkAllParentTasks}
+                                 toggleUpdateMode={this.toggleUpdateMode}
+                                 forceSetItemTodo={this.forceSetItemTodo}
+                                 togglePopup={this.props.togglePopup}
+                                 key={Date.now() + '@' + task.id}
+                                 ref={(el => refSet.set(task.id, el))}/>);
             }
             this.setState({items: tasks, itemRefs: refSet});
 
@@ -65,7 +66,6 @@ class TodoList extends Component{
 
     toggleUpdateMode(content, id) {
         this.props.toggleUpdateMode(content, id);
-        this.setState({currentUpdatingId: id});
     }
 
     forceSetItemTodo(id) {
@@ -92,6 +92,8 @@ class TodoList extends Component{
         for(let id of parentTaskIds){
             if (this.state.itemRefs.has(id) && this.state.itemRefs.get(id) !== null) {
                 this.state.itemRefs.get(id).taskChoosingCheckbox.selectOrUnselectForParentTask();
+            } else {
+                this.props.addOrRemoveChosenTask(id, true);
             }
         }
     }
