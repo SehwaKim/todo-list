@@ -9,7 +9,7 @@ class TodoItem extends Component{
         super(props);
         this.state = {
             done: false,
-            updated: false,
+            updated: this.props.updated,
             updatedAt: this.props.updatedAt,
             updateMode: this.props.currentlyUpdating,
             unRemovable: this.props.chooseTaskMode,
@@ -111,8 +111,6 @@ class TodoItem extends Component{
         var content = this.state.updateMode ? "" : this.props.content;
         this.props.toggleUpdateMode(content, this.props.id);
         this.setState({updateMode: !this.state.updateMode});
-
-        // 모조리 todo로 바뀐애들은 put 메소드 리턴값으로 바뀐 아이디들만 가져와서 현재화면에 있는애들중에 일치하는애 있으면 다시 빠꾸시키기
     }
 
     render() {
@@ -213,9 +211,7 @@ class TodoItem extends Component{
                             <div>
                                 <div style={this.state.done ? doneContentStyle : contentStyle}>
                                     <span
-                                        onDoubleClick={
-                                            this.state.modifyStatusDisability
-                                                ? null : this.changeTaskStatus}>
+                                        onDoubleClick={this.state.modifyStatusDisability ? null : this.changeTaskStatus}>
                                         {this.props.content}</span>
                                     <span
                                         style={this.state.modifyDisability ? unModifyModeSvg : modifyModeSvg}
@@ -232,7 +228,8 @@ class TodoItem extends Component{
                             <div>
                                 <div>{this.props.createdAt} <span style={smallWord}>(created)</span></div>
                                 {this.state.updated ?
-                                    <div>{this.state.updatedAt} <span style={smallWord}>(updated)</span></div> : null}
+                                    <div>{this.state.updatedAt} <span style={smallWord}>(updated)</span></div>
+                                    : null}
                             </div>
                         </td>
                         <td style={buttonCellStyle}>

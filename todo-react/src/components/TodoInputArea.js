@@ -112,10 +112,12 @@ class TodoInputArea extends Component{
             return {
                 chooseTasks: !prevState.chooseTasks,
                 updateTasks: !prevState.updateTasks,
-                idForUpdate: this.state.idForUpdate === id ? 0 : id
+                idForUpdate: this.state.idForUpdate === id ? 0 : id,
+                taskNumber: prevState.updateTasks ? [] : prevState.taskNumber,
+                taskNumberForShow: prevState.updateTasks ? [] : prevState.taskNumberForShow
             }
         });
-    }
+    };
 
     render() {
         var inputAreaStyle = {

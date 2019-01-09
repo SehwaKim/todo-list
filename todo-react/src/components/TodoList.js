@@ -40,21 +40,22 @@ class TodoList extends Component{
                 let temporarySelection = this.props.isTemporarilySelected(task.id);
 
                 tasks.push(<TodoItem id={task.id} content={task.content} status={task.status}
-                                 createdAt={task.createdAt} updatedAt={task.updatedAt}
-                                 parentTaskIds={task.parentTaskIds}
-                                 parentTaskIdsString={task.parentTaskIdsString}
-                                 chooseTaskMode={this.state.chooseTaskMode}
-                                 currentlyUpdating={currentlyUpdatingId === task.id}
-                                 temporarySelection={temporarySelection}
-                                 removeTodoItem={this.removeTodoItem}
-                                 addOrRemoveChosenTask={this.props.addOrRemoveChosenTask}
-                                 toggleCheckboxDisability={this.toggleCheckboxDisability}
-                                 checkAllParentTasks={this.checkAllParentTasks}
-                                 toggleUpdateMode={this.toggleUpdateMode}
-                                 forceSetItemTodo={this.forceSetItemTodo}
-                                 togglePopup={this.props.togglePopup}
-                                 key={Date.now() + '@' + task.id}
-                                 ref={(el => refSet.set(task.id, el))}/>);
+                                     updated={task.updatedAt !== null}
+                                     createdAt={task.createdAt} updatedAt={task.updatedAt}
+                                     parentTaskIds={task.parentTaskIds}
+                                     parentTaskIdsString={task.parentTaskIdsString}
+                                     chooseTaskMode={this.state.chooseTaskMode}
+                                     currentlyUpdating={currentlyUpdatingId === task.id}
+                                     temporarySelection={temporarySelection}
+                                     removeTodoItem={this.removeTodoItem}
+                                     addOrRemoveChosenTask={this.props.addOrRemoveChosenTask}
+                                     toggleCheckboxDisability={this.toggleCheckboxDisability}
+                                     checkAllParentTasks={this.checkAllParentTasks}
+                                     toggleUpdateMode={this.toggleUpdateMode}
+                                     forceSetItemTodo={this.forceSetItemTodo}
+                                     togglePopup={this.props.togglePopup}
+                                     key={Date.now() + '@' + task.id}
+                                     ref={(el => refSet.set(task.id, el))}/>);
             }
             this.setState({items: tasks, itemRefs: refSet});
 
