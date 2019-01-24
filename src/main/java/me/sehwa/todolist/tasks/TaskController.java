@@ -20,7 +20,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/tasks")
+@RequestMapping(value = "/api/tasks")
 public class TaskController {
 
     @Autowired

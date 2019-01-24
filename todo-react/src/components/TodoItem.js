@@ -44,7 +44,7 @@ class TodoItem extends Component{
     }
 
     changeTaskStatus(e) {
-        axios.put('/tasks/' + this.props.id,
+        axios.put('/api/tasks/' + this.props.id,
             {
                 status: this.state.done ? 'TODO' : 'DONE',
                 updateOnlyForStatus: true
@@ -80,13 +80,13 @@ class TodoItem extends Component{
     }
 
     deleteTask() {
-        axios.delete('/tasks/' + this.props.id)
+        axios.delete('/api/tasks/' + this.props.id)
             .then((response) => {
                 this.props.removeTodoItem(this.props.id);
             }).catch(function (error) {
                 alert("다른 TODO로부터 참조되고 있는 TODO는 삭제할 수 없습니다.");
             }).then(function () {
-                // always executed
+                window.location.reload();
             });
     }
 

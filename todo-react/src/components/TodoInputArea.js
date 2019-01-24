@@ -51,7 +51,7 @@ class TodoInputArea extends Component{
             return;
         }
 
-        axios.post('/tasks',
+        axios.post('/api/tasks',
             {
                 content: content,
                 idGroupOfTasksToBeParent: this.state.taskNumber
@@ -70,7 +70,7 @@ class TodoInputArea extends Component{
     }
 
     updateTodo(e) {
-        axios.put('/tasks/' + this.state.idForUpdate,
+        axios.put('/api/tasks/' + this.state.idForUpdate,
             {
                 content: this._inputElement.value,
                 idGroupOfTasksToBeParent: this.state.taskNumber

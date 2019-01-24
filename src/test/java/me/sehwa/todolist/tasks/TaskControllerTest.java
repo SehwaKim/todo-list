@@ -11,7 +11,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -23,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -52,7 +50,7 @@ public class TaskControllerTest {
                 .content(task.get().getContent())
                 .idGroupOfTasksToBeParent(task.get().getParentTaskIds()).build();
 
-        mockMvc.perform(post("/tasks")
+        mockMvc.perform(post("/api/tasks")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(parameter)))
                 .andDo(print())
@@ -70,7 +68,7 @@ public class TaskControllerTest {
         when(taskService.createNewTaskAndTaskDependencies(any(Task.class), any(List.class)))
                 .thenThrow(NoSuchTaskException.class);
 
-        mockMvc.perform(post("/tasks")
+        mockMvc.perform(post("/api/tasks")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(parameter)))
                 .andDo(print())
@@ -89,7 +87,7 @@ public class TaskControllerTest {
 
         when(taskService.getTasks(any(Pageable.class))).thenReturn(tasks);
 
-        mockMvc.perform(get("/tasks")
+        mockMvc.perform(get("/api/tasks")
                 .param("size", "6")
                 .param("page", "1"))
                 .andDo(print())
@@ -106,7 +104,7 @@ public class TaskControllerTest {
     public void ID로_TODO_한개_조회하기() throws Exception {
         when(taskService.getTaskById(9L)).thenReturn(makeTestTask());
 
-        mockMvc.perform(get("/tasks/9"))
+        mockMvc.perform(get("/api/tasks/9"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("parentTaskIds").hasJsonPath());
@@ -118,7 +116,7 @@ public class TaskControllerTest {
     public void 잘못된_ID로_TODO_한개_조회_예외처리() throws Exception {
         when(taskService.getTaskById(9L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/tasks/9"))
+        mockMvc.perform(get("/api/tasks/9"))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
@@ -135,7 +133,7 @@ public class TaskControllerTest {
                 .content(task.get().getContent())
                 .idGroupOfTasksToBeParent(task.get().getParentTaskIds()).build();
 
-        mockMvc.perform(put("/tasks/3")
+        mockMvc.perform(put("/api/tasks/3")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(parameter)))
                 .andDo(print())
@@ -155,7 +153,7 @@ public class TaskControllerTest {
                 .content(task.get().getContent())
                 .idGroupOfTasksToBeParent(task.get().getParentTaskIds()).build();
 
-        mockMvc.perform(put("/tasks/3")
+        mockMvc.perform(put("/api/tasks/3")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(parameter)))
                 .andDo(print())
@@ -176,7 +174,7 @@ public class TaskControllerTest {
                 .status(TaskStatus.DONE)
                 .updateOnlyForStatus(true).build();
 
-        mockMvc.perform(put("/tasks/3")
+        mockMvc.perform(put("/api/tasks/3")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(parameter)))
                 .andDo(print())
@@ -190,7 +188,7 @@ public class TaskControllerTest {
     public void TODO_삭제하기() throws Exception {
         when(taskService.getTaskById(1L)).thenReturn(makeTestTask());
 
-        mockMvc.perform(delete("/tasks/1"))
+        mockMvc.perform(delete("/api/tasks/1"))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -201,7 +199,7 @@ public class TaskControllerTest {
     public void 없는_TODO_삭제하기_예외처리() throws Exception {
         when(taskService.getTaskById(1L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(delete("/tasks/1"))
+        mockMvc.perform(delete("/api/tasks/1"))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
@@ -213,7 +211,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(any())).thenReturn(makeTestTask());
         when(taskService.removeTask(any())).thenThrow(BreakChainBetweenTasksException.class);
 
-        mockMvc.perform(delete("/tasks/1"))
+        mockMvc.perform(delete("/api/tasks/1"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 

@@ -1,5 +1,6 @@
 package me.sehwa.todolist.tasks;
 
+import me.sehwa.todolist.exceptions.BreakChainBetweenTasksException;
 import me.sehwa.todolist.exceptions.NoSuchTaskException;
 import me.sehwa.todolist.taskDependencies.TaskDependency;
 import me.sehwa.todolist.taskDependencies.TaskDependencyRepository;
@@ -121,4 +122,31 @@ public class TaskServiceTest {
 
         verify(taskRepository).findById(10L);
     }
+
+    @Test
+    public void TODO_삭제하기() {
+        doNothing().when(taskDependencyRepository).deleteAllByChildTaskId(any(Long.class));
+        doNothing().when(taskRepository).delete(any(Task.class));
+
+        assertThat(taskService.removeTask(mock(Task.class))).isTrue();
+
+        verify(taskDependencyRepository, times(1)).deleteAllByChildTaskId(any(Long.class));
+        verify(taskRepository, times(1)).delete(any(Task.class));
+    }
+
+    @Test(expected = BreakChainBetweenTasksException.class)
+    public void 다른TODO들에게_참조당하는_TODO_삭제하려고할때_예외발생처리() {
+        Task mockTask = mock(Task.class);
+        List<TaskDependency> mockList = mock(List.class);
+
+        when(mockTask.getChildTasksFollowingParentTask()).thenReturn(mockList);
+        when(mockList.isEmpty()).thenReturn(false);
+
+        taskService.removeTask(mockTask);
+
+        verify(mockTask, times(1)).getChildTasksFollowingParentTask();
+        verify(mockList, times(1)).isEmpty();
+    }
+
+
 }

@@ -24,7 +24,7 @@ class TodoList extends Component{
     }
 
     getTasksByPage(page) {
-        axios.get('/tasks', {
+        axios.get('/api/tasks', {
             params: {
                 page: page
             }

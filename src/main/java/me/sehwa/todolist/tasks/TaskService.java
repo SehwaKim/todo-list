@@ -26,7 +26,6 @@ public class TaskService {
 
     @Transactional
     public Task createNewTaskAndTaskDependencies(Task task, List<Long> idGroupOfTasksToBeParent) {
-
         Task savedTask = taskRepository.save(task);
 
         if (idGroupOfTasksToBeParent.isEmpty()) {
@@ -48,19 +47,16 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public Page<Task> getTasks(Pageable pageable) {
-
         return taskRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
     public Optional<Task> getTaskById(Long id) {
-
         return taskRepository.findById(id);
     }
 
     @Transactional
     public Task updateTask(Task updatingTask, TaskDto taskDto) {
-
         List<TaskDependency> updatedParentTaskDependency
                 = getUpdatedParentTaskDependency(updatingTask, taskDto.getIdGroupOfTasksToBeParent());
 
@@ -86,7 +82,6 @@ public class TaskService {
 
     private List<Long> getNewlyAddedParentTaskIds(List<TaskDependency> currentParentTaskDependencies,
                                                   List<Long> idGroupOfTasksToBeParent) {
-
         List<Long> newlyAddedParentTaskIds = new ArrayList<>();
 
         Set<Long> filterComparingOldAndNew = new HashSet<>();
@@ -106,7 +101,6 @@ public class TaskService {
 
     private List<Long> getNotSelectedOldParentTaskIds(List<TaskDependency> currentParentTaskDependencies,
                                                     List<Long> idGroupOfTasksToBeParent) {
-
         Set<Long> notSelectedOldParentTasks = new HashSet<>();
         currentParentTaskDependencies.forEach(
                 dependency -> notSelectedOldParentTasks.add(dependency.getParentTask().getId())
@@ -122,7 +116,6 @@ public class TaskService {
     private void createNewDependenciesAndAddToList(List<Long> newlyAddedParentTaskIds,
                                                    List<TaskDependency> updatedParentTaskDependency,
                                                    Task updatingTask) {
-
         for (Long id : newlyAddedParentTaskIds) {
             Task taskToBeParent = getTaskToBeParent(id, updatingTask);
             TaskDependency dependency = TaskDependency
@@ -164,62 +157,9 @@ public class TaskService {
         return isChildTask;
     }
 
-    /*public Task updateTask2(Task updatingTask, TaskDto taskDto) {
-
-        List<TaskDependency> parentTasksFollowedByChildTask = updatingTask.getParentTasksFollowedByChildTask();
-
-        Set<Long> filterComparingOldAndNew = new HashSet<>();
-        parentTasksFollowedByChildTask.forEach(dependency -> filterComparingOldAndNew.add(dependency.getParentTask().getId()));
-
-        List<Long> idGroupOfCandidatesForParentTask = taskDto.getIdGroupOfTasksToBeParent();
-
-        for (Long id : idGroupOfCandidatesForParentTask) {
-
-            boolean isNewlyAddedAsParent = filterComparingOldAndNew.add(id);
-
-            if (isNewlyAddedAsParent) {
-                Optional<Task> optionalTask = taskRepository.findById(id);
-                Task taskToBeParent = optionalTask.orElseThrow(NoSuchTaskException::new);
-
-                Set<Long> alreadyVisitedNodes = new HashSet<>();
-
-                boolean isChildTask =
-                        searchAllChildTasksAndCompareRecursively(id, updatingTask.getChildTasksFollowingParentTask(), alreadyVisitedNodes);
-
-                if (isChildTask) {
-                    throw new CircularReferenceException();
-                }
-
-                TaskDependency taskDependency =
-                        TaskDependency.builder().parentTask(taskToBeParent).childTask(updatingTask).build();
-
-                taskDependencyRepository.save(taskDependency);
-            }
-
-            removeParentTaskIdFromFilter(id, filterComparingOldAndNew);
-        }
-
-        deleteRemainingOldDependencies(updatingTask, filterComparingOldAndNew);
-
-        updatingTask.setContent(taskDto.getContent());
-
-        return saveWithUpdatedTime(updatingTask);
-    }
-
-    private void deleteRemainingOldDependencies(Task updatingTask, Set<Long> filter) {
-        filter.forEach(notSelectedId ->
-                taskDependencyRepository.deleteByChildTaskIdAndParentTaskId(updatingTask.getId(), notSelectedId)
-        );
-    }
-
-    private void removeParentTaskIdFromFilter(Long id, Set<Long> filter) {
-        filter.remove(id);
-    }*/
-
     private boolean searchAllChildTasksAndCompareRecursively(Long idOfTaskToBeParent,
                                                              List<TaskDependency> childTasksFollowingParentTask,
                                                              Set<Long> alreadyVisitedNodes) {
-
         if (childTasksFollowingParentTask.isEmpty()) {
             return false;
         }
@@ -227,13 +167,11 @@ public class TaskService {
         boolean isChildTask = false;
 
         for (TaskDependency dependency : childTasksFollowingParentTask) {
-
             Long childTaskId = dependency.getChildTask().getId();
 
             if (alreadyVisitedNodes.contains(childTaskId)) {
                 continue;
             }
-
             if (idOfTaskToBeParent.equals(childTaskId)) {
                 isChildTask = true;
                 break;
@@ -244,18 +182,15 @@ public class TaskService {
             isChildTask = searchAllChildTasksAndCompareRecursively(idOfTaskToBeParent,
                                                     dependency.getChildTask().getChildTasksFollowingParentTask(),
                                                     alreadyVisitedNodes);
-
             if (isChildTask) {
                 break;
             }
         }
-
         return isChildTask;
     }
 
     @Transactional
     public TaskDto setTaskDone(Task updatingTask) {
-
         boolean allParentTasksDone = updatingTask.getParentTasksFollowedByChildTask()
                             .stream()
                             .allMatch(dependency -> dependency.getParentTask().getStatus().isDone());
@@ -283,7 +218,6 @@ public class TaskService {
 
     private void setAllChildTasksTodoAndSaveRecursively(List<TaskDependency> childTasksFollowingParentTask,
                                                         List<Long> affectedChildTaskIds) {
-
         if(childTasksFollowingParentTask.isEmpty()) return;
 
         for (TaskDependency dependency : childTasksFollowingParentTask) {
@@ -300,10 +234,9 @@ public class TaskService {
         }
     }
 
-    private Task saveWithUpdatedTime(Task existingTask) {
-
-        existingTask.setUpdatedAt(LocalDateTime.now());
-        return taskRepository.save(existingTask);
+    private Task saveWithUpdatedTime(Task updatingTask) {
+        updatingTask.setUpdatedAt(LocalDateTime.now());
+        return taskRepository.save(updatingTask);
     }
 
     @Transactional
