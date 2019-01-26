@@ -45,7 +45,12 @@ public class TaskServiceTest {
 
     @Test
     public void 새_TODO_추가() {
-        Task task = Task.builder().id(1L).content("todo 1").createdAt(LocalDateTime.now()).build();
+        Task task = Task.builder()
+                        .id(1L)
+                        .content("todo 1")
+                        .createdAt(LocalDateTime.now())
+                        .build();
+
         when(taskRepository.save(task)).thenReturn(task);
 
         Task savedTask = taskService.createNewTaskAndTaskDependencies(task, new ArrayList<>());
@@ -99,10 +104,10 @@ public class TaskServiceTest {
         listOfMock.add(mock(Task.class));
         listOfMock.add(mock(Task.class));
 
-        Page<Task> pagedTasks = new PageImpl<Task>(listOfMock, pageable, 6);
+        Page<Task> pagedTasks = new PageImpl<>(listOfMock, pageable, 6);
         when(taskRepository.findAll(any(Pageable.class))).thenReturn(pagedTasks);
 
-        Page<Task> resultTasks = taskService.getTasks(pageable);
+        Page<Task> resultTasks = taskService.getTasks(page, size);
         assertThat(resultTasks.getContent().size()).isEqualTo(3);
         assertThat(resultTasks.getPageable().getOffset()).isEqualTo(page * size);
         assertThat(resultTasks.getPageable().getPageSize()).isEqualTo(size);
@@ -113,13 +118,18 @@ public class TaskServiceTest {
 
     @Test
     public void TODO_한개_가져오기() {
-        Task task = Task.builder().id(10L).content("todo 1").createdAt(LocalDateTime.now()).build();
+        Task task = Task.builder()
+                        .id(10L)
+                        .content("todo 1")
+                        .createdAt(LocalDateTime.now())
+                        .parentTasksFollowedByChildTask(new ArrayList<>())
+                        .build();
 
         when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(task));
 
-        Optional<Task> optionalTask = taskService.getTaskById(10L);
-        assertThat(optionalTask.get().getId()).isEqualTo(10L);
-        assertThat(optionalTask.get().getContent()).isEqualTo("todo 1");
+        Task existingTask = taskService.getTaskById(10L);
+        assertThat(existingTask.getId()).isEqualTo(task.getId());
+        assertThat(existingTask.getContent()).isEqualTo(task.getContent());
 
         verify(taskRepository).findById(10L);
     }

@@ -13,6 +13,7 @@ import java.util.List;
 @Getter @Setter
 @Builder @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class Task {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +41,7 @@ public class Task {
     private List<TaskDependency> childTasksFollowingParentTask = new ArrayList<>();
 
     @Transient
-    private List<Long> parentTaskIds = new ArrayList<>();
+    private List<Long> parentTaskIdList = new ArrayList<>();
 
     @Transient
     private String parentTaskIdsString;

@@ -10,7 +10,8 @@ import com.todolist.todolist.repository.TaskDependencyRepository;
 import com.todolist.todolist.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,27 +49,70 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Task> getTasks(Pageable pageable) {
-        return taskRepository.findAll(pageable);
+    public Page<Task> getTasks(int page, int size) {
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        Page<Task> tasks = taskRepository.findAll(PageRequest.of(page - 1, size, sort));
+
+        tasks.forEach(task -> {
+                    StringBuilder sb = new StringBuilder();
+
+                    task.getParentTasksFollowedByChildTask()
+                            .forEach(dependency ->{
+                                task.getParentTaskIdList().add(dependency.getParentTask().getId());
+                                sb.append(" @"+dependency.getParentTask().getId());
+                            });
+
+                    task.setParentTaskIdsString(sb.toString());
+                }
+        );
+
+        return tasks;
     }
 
     @Transactional(readOnly = true)
-    public Optional<Task> getTaskById(Long id) {
-        return taskRepository.findById(id);
+    public Task getTaskById(Long id) {
+
+        Optional<Task> optionalTask = taskRepository.findById(id);
+        if (!optionalTask.isPresent()) {
+            throw new ServiceException(ExceptionType.NO_SUCH_TASK);
+        }
+
+        Task task = optionalTask.get();
+        StringBuilder sb = new StringBuilder();
+        System.out.println(task);
+        task.getParentTasksFollowedByChildTask().forEach(dependency ->{
+                    task.getParentTaskIdList().add(dependency.getParentTask().getId());
+                    sb.append(" @"+dependency.getParentTask().getId());
+                }
+        );
+        task.setParentTaskIdsString(sb.toString());
+        return task;
     }
 
     @Transactional
     public Task updateTask(Task updatingTask, TaskDto taskDto) {
+
         List<TaskDependency> updatedParentTaskDependency
                 = getUpdatedParentTaskDependency(updatingTask, taskDto.getIdGroupOfTasksToBeParent());
 
         updatingTask.setParentTasksFollowedByChildTask(updatedParentTaskDependency);
         updatingTask.setContent(taskDto.getContent());
 
+        makeParentIdList(updatingTask);
+
         return saveWithUpdatedTime(updatingTask);
     }
 
+    private void makeParentIdList(Task updatingTask) {
+        updatingTask.getParentTasksFollowedByChildTask()
+                .forEach(
+                        dependency -> updatingTask.getParentTaskIdList().add(dependency.getParentTask().getId())
+                );
+    }
+
     private List<TaskDependency> getUpdatedParentTaskDependency(Task updatingTask, List<Long> idGroupOfTasksToBeParent) {
+
         List<TaskDependency> updatedParentTaskDependency = new ArrayList<>();
 
         List<Long> newlyAddedParentTaskIds

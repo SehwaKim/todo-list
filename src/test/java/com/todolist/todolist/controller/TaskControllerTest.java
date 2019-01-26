@@ -15,7 +15,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -48,11 +46,11 @@ public class TaskControllerTest {
 
     @Test
     public void TODO_생성() throws Exception {
-        Optional<Task> task = makeTestTask();
+        Task task = makeTestTask();
 
         TaskDto parameter = TaskDto.builder()
-                .content(task.get().getContent())
-                .idGroupOfTasksToBeParent(task.get().getParentTaskIds()).build();
+                .content(task.getContent())
+                .idGroupOfTasksToBeParent(task.getParentTaskIdList()).build();
 
         mockMvc.perform(post("/api/tasks")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -63,11 +61,11 @@ public class TaskControllerTest {
 
     @Test
     public void TODO_생성_예외처리() throws Exception {
-        Optional<Task> task = makeTestTask();
+        Task task = makeTestTask();
 
         TaskDto parameter = TaskDto.builder()
-                .content(task.get().getContent())
-                .idGroupOfTasksToBeParent(task.get().getParentTaskIds()).build();
+                .content(task.getContent())
+                .idGroupOfTasksToBeParent(task.getParentTaskIdList()).build();
 
         when(taskService.createNewTaskAndTaskDependencies(any(Task.class), any(List.class)))
                 .thenThrow(new ServiceException(ExceptionType.NO_SUCH_TASK));
@@ -84,12 +82,12 @@ public class TaskControllerTest {
     @Test
     public void 모든_TODO_조회하기() throws Exception {
         List<Task> content = new ArrayList<>();
-        content.add(makeTestTask().get());
+        content.add(makeTestTask());
 
         Page<Task> tasks = new PageImpl<>(content);
         tasks.forEach(t -> t.setParentTasksFollowedByChildTask(new ArrayList<>()));
 
-        when(taskService.getTasks(any(Pageable.class))).thenReturn(tasks);
+        when(taskService.getTasks(1, 6)).thenReturn(tasks);
 
         mockMvc.perform(get("/api/tasks")
                 .param("size", "6")
@@ -101,7 +99,7 @@ public class TaskControllerTest {
                 .andExpect(jsonPath("pageable").hasJsonPath())
                 .andExpect(jsonPath("totalPages").hasJsonPath());
 
-        verify(taskService).getTasks(any(Pageable.class));
+        verify(taskService).getTasks(1, 6);
     }
 
     @Test
@@ -111,31 +109,31 @@ public class TaskControllerTest {
         mockMvc.perform(get("/api/tasks/9"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("parentTaskIds").hasJsonPath());
+                .andExpect(jsonPath("parentTaskIdList").hasJsonPath());
 
         verify(taskService).getTaskById(9L);
     }
 
     @Test
     public void 잘못된_ID로_TODO_한개_조회_예외처리() throws Exception {
-        when(taskService.getTaskById(9L)).thenReturn(Optional.empty());
+        when(taskService.getTaskById(9L)).thenThrow(new ServiceException(ExceptionType.NO_SUCH_TASK));
 
         mockMvc.perform(get("/api/tasks/9"))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         verify(taskService).getTaskById(9L);
     }
 
     @Test
     public void TODO_수정하기() throws Exception {
-        Optional<Task> task = makeTestTask();
+        Task task = makeTestTask();
         when(taskService.getTaskById(3L)).thenReturn(task);
-        when(taskService.updateTask(any(), any())).thenReturn(task.get());
+        when(taskService.updateTask(any(), any())).thenReturn(task);
 
         TaskDto parameter = TaskDto.builder()
-                .content(task.get().getContent())
-                .idGroupOfTasksToBeParent(task.get().getParentTaskIds()).build();
+                .content(task.getContent())
+                .idGroupOfTasksToBeParent(task.getParentTaskIdList()).build();
 
         mockMvc.perform(put("/api/tasks/3")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -150,31 +148,31 @@ public class TaskControllerTest {
 
     @Test
     public void 없는_TODO_수정하기() throws Exception {
-        Optional<Task> task = makeTestTask();
-        when(taskService.getTaskById(3L)).thenReturn(Optional.empty());
+        Task task = makeTestTask();
+        when(taskService.getTaskById(3L)).thenThrow(new ServiceException(ExceptionType.NO_SUCH_TASK));
 
         TaskDto parameter = TaskDto.builder()
-                .content(task.get().getContent())
-                .idGroupOfTasksToBeParent(task.get().getParentTaskIds()).build();
+                .content(task.getContent())
+                .idGroupOfTasksToBeParent(task.getParentTaskIdList()).build();
 
         mockMvc.perform(put("/api/tasks/3")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(parameter)))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         verify(taskService).getTaskById(3L);
     }
 
     @Test
     public void 모든_참조하는_todo_미완료일때_수정시도_예외처리() throws Exception {
-        Optional<Task> task = makeTestTask();
+        Task task = makeTestTask();
         when(taskService.getTaskById(3L)).thenReturn(task);
         when(taskService.setTaskDone(any())).thenThrow(new ServiceException(ExceptionType.ALL_TASK_NEED_TO_BE_DONE));
 
         TaskDto parameter = TaskDto.builder()
-                .content(task.get().getContent())
-                .idGroupOfTasksToBeParent(task.get().getParentTaskIds())
+                .content(task.getContent())
+                .idGroupOfTasksToBeParent(task.getParentTaskIdList())
                 .status(TaskStatus.DONE)
                 .updateOnlyForStatus(true).build();
 
@@ -201,11 +199,11 @@ public class TaskControllerTest {
 
     @Test
     public void 없는_TODO_삭제하기_예외처리() throws Exception {
-        when(taskService.getTaskById(1L)).thenReturn(Optional.empty());
+        when(taskService.getTaskById(1L)).thenThrow(new ServiceException(ExceptionType.NO_SUCH_TASK));
 
         mockMvc.perform(delete("/api/tasks/1"))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         verify(taskService).getTaskById(1L);
     }
@@ -223,7 +221,7 @@ public class TaskControllerTest {
         verify(taskService).removeTask(any());
     }
 
-    private Optional<Task> makeTestTask() {
+    private Task makeTestTask() {
         List<Long> parentTaskIds = new ArrayList<>();
         parentTaskIds.add(8L);
         parentTaskIds.add(9L);
@@ -233,13 +231,13 @@ public class TaskControllerTest {
                 .status(TaskStatus.TODO)
                 .content("todo 1")
                 .createdAt(LocalDateTime.now())
-                .parentTaskIds(parentTaskIds).build();
+                .parentTaskIdList(parentTaskIds).build();
 
         task.setParentTasksFollowedByChildTask(new ArrayList<>());
         task.setChildTasksFollowingParentTask(new ArrayList<>());
-        task.setParentTaskIds(new ArrayList<>());
+        task.setParentTaskIdList(new ArrayList<>());
         task.setParentTaskIdsString("");
 
-        return Optional.of(task);
+        return task;
     }
 }

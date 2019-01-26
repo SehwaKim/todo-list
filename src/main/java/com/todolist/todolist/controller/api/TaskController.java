@@ -47,42 +47,14 @@ public class TaskController {
     public ResponseEntity getTasks(@RequestParam(defaultValue = "1") int page,
                                    @RequestParam(defaultValue = "6") int size) {
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "id");
-        Page<Task> tasks = taskService.getTasks(PageRequest.of(page - 1, size, sort));
-
-        tasks.forEach(task -> {
-                StringBuilder sb = new StringBuilder();
-
-                task.getParentTasksFollowedByChildTask()
-                        .forEach(dependency ->{
-                                task.getParentTaskIds().add(dependency.getParentTask().getId());
-                                sb.append(" @"+dependency.getParentTask().getId());
-                        });
-
-                task.setParentTaskIdsString(sb.toString());
-            }
-        );
-
+        Page<Task> tasks = taskService.getTasks(page, size);
         return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity getTask(@PathVariable Long id) {
 
-        Optional<Task> optionalTask = taskService.getTaskById(id);
-        if (!optionalTask.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Task task = optionalTask.get();
-        StringBuilder sb = new StringBuilder();
-        task.getParentTasksFollowedByChildTask().forEach(dependency ->{
-                task.getParentTaskIds().add(dependency.getParentTask().getId());
-                sb.append(" @"+dependency.getParentTask().getId());
-            }
-        );
-        task.setParentTaskIdsString(sb.toString());
-
+        Task task = taskService.getTaskById(id);
         return ResponseEntity.ok(task);
     }
 
@@ -91,40 +63,29 @@ public class TaskController {
                                      @RequestBody TaskDto taskDto) {
         log.info(taskDto.toString());
 
-        Optional<Task> optionalTask = taskService.getTaskById(id);
-        if (!optionalTask.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
+        Task task = taskService.getTaskById(id);
 
         if (taskDto.isUpdateOnlyForStatus()) {
             TaskDto updatedTaskDto = null;
 
             if (taskDto.getStatus().isDone()) {
-                updatedTaskDto = taskService.setTaskDone(optionalTask.get());
+                updatedTaskDto = taskService.setTaskDone(task);
             } else {
-                updatedTaskDto = taskService.setTaskToDo(optionalTask.get());
+                updatedTaskDto = taskService.setTaskToDo(task);
             }
+
             return ResponseEntity.ok(updatedTaskDto);
         }
 
-
-        Task updatedTask = taskService.updateTask(optionalTask.get(), taskDto);
-        updatedTask.getParentTasksFollowedByChildTask()
-                .forEach(
-                        dependency -> updatedTask.getParentTaskIds()
-                                .add(dependency.getParentTask().getId())
-                );
+        Task updatedTask = taskService.updateTask(task, taskDto);
         return ResponseEntity.ok(updatedTask);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity deleteTask(@PathVariable Long id) {
 
-        Optional<Task> optionalTask = taskService.getTaskById(id);
-        if (!optionalTask.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-        taskService.removeTask(optionalTask.get());
+        Task task = taskService.getTaskById(id);
+        taskService.removeTask(task);
         return ResponseEntity.ok().build();
     }
 }
