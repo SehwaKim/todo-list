@@ -1,4 +1,4 @@
-package me.sehwa.todolist;
+package com.todolist.todolist;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

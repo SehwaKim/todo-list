@@ -1,9 +1,13 @@
-package me.sehwa.todolist.tasks;
+package com.todolist.todolist.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.sehwa.todolist.exceptions.AllTasksNeedToBeDoneException;
-import me.sehwa.todolist.exceptions.BreakChainBetweenTasksException;
-import me.sehwa.todolist.exceptions.NoSuchTaskException;
+import com.todolist.todolist.controller.api.TaskController;
+import com.todolist.todolist.domain.Task;
+import com.todolist.todolist.domain.TaskDto;
+import com.todolist.todolist.domain.TaskStatus;
+import com.todolist.todolist.exception.ExceptionType;
+import com.todolist.todolist.exception.ServiceException;
+import com.todolist.todolist.service.TaskService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +70,7 @@ public class TaskControllerTest {
                 .idGroupOfTasksToBeParent(task.get().getParentTaskIds()).build();
 
         when(taskService.createNewTaskAndTaskDependencies(any(Task.class), any(List.class)))
-                .thenThrow(NoSuchTaskException.class);
+                .thenThrow(new ServiceException(ExceptionType.NO_SUCH_TASK));
 
         mockMvc.perform(post("/api/tasks")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -166,7 +170,7 @@ public class TaskControllerTest {
     public void 모든_참조하는_todo_미완료일때_수정시도_예외처리() throws Exception {
         Optional<Task> task = makeTestTask();
         when(taskService.getTaskById(3L)).thenReturn(task);
-        when(taskService.setTaskDone(any())).thenThrow(AllTasksNeedToBeDoneException.class);
+        when(taskService.setTaskDone(any())).thenThrow(new ServiceException(ExceptionType.ALL_TASK_NEED_TO_BE_DONE));
 
         TaskDto parameter = TaskDto.builder()
                 .content(task.get().getContent())
@@ -209,7 +213,7 @@ public class TaskControllerTest {
     @Test
     public void TODO_삭제안되는경우_예외던지기() throws Exception {
         when(taskService.getTaskById(any())).thenReturn(makeTestTask());
-        when(taskService.removeTask(any())).thenThrow(BreakChainBetweenTasksException.class);
+        when(taskService.removeTask(any())).thenThrow(new ServiceException(ExceptionType.BREAK_CHAIN_BETWEEN_TASKS));
 
         mockMvc.perform(delete("/api/tasks/1"))
                 .andDo(print())

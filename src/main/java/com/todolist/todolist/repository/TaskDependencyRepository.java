@@ -1,5 +1,6 @@
-package me.sehwa.todolist.taskDependencies;
+package com.todolist.todolist.repository;
 
+import com.todolist.todolist.domain.TaskDependency;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

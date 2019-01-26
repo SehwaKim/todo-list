@@ -1,9 +1,10 @@
-package me.sehwa.todolist.tasks;
+package com.todolist.todolist.controller.api;
 
+import com.todolist.todolist.domain.Task;
+import com.todolist.todolist.domain.TaskDto;
+import com.todolist.todolist.service.TaskService;
+import com.todolist.todolist.domain.TaskStatus;
 import lombok.extern.slf4j.Slf4j;
-import me.sehwa.todolist.exceptions.AllTasksNeedToBeDoneException;
-import me.sehwa.todolist.exceptions.BreakChainBetweenTasksException;
-import me.sehwa.todolist.exceptions.NoSuchTaskException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,8 +15,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -40,16 +39,7 @@ public class TaskController {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        try {
-
-            taskService.createNewTaskAndTaskDependencies(task, taskDto.getIdGroupOfTasksToBeParent());
-
-        } catch (NoSuchTaskException ex) {
-
-            Map<String, String> message = Collections.singletonMap("message", ex.getMessage());
-            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
-        }
-
+        taskService.createNewTaskAndTaskDependencies(task, taskDto.getIdGroupOfTasksToBeParent());
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
@@ -110,36 +100,21 @@ public class TaskController {
             TaskDto updatedTaskDto = null;
 
             if (taskDto.getStatus().isDone()) {
-                try {
-
-                    updatedTaskDto = taskService.setTaskDone(optionalTask.get());
-
-                } catch (AllTasksNeedToBeDoneException ex) {
-
-                    Map<String, String> message = Collections.singletonMap("message", ex.getMessage());
-                    return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
-                }
-
+                updatedTaskDto = taskService.setTaskDone(optionalTask.get());
             } else {
                 updatedTaskDto = taskService.setTaskToDo(optionalTask.get());
             }
-
             return ResponseEntity.ok(updatedTaskDto);
         }
 
-        try {
-            Task updatedTask = taskService.updateTask(optionalTask.get(), taskDto);
-            updatedTask.getParentTasksFollowedByChildTask()
-                    .forEach(
-                            dependency -> updatedTask.getParentTaskIds()
-                                    .add(dependency.getParentTask().getId())
-                    );
-            return ResponseEntity.ok(updatedTask);
 
-        } catch (RuntimeException ex) {
-            Map<String, String> message = Collections.singletonMap("message", ex.getMessage());
-            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
-        }
+        Task updatedTask = taskService.updateTask(optionalTask.get(), taskDto);
+        updatedTask.getParentTasksFollowedByChildTask()
+                .forEach(
+                        dependency -> updatedTask.getParentTaskIds()
+                                .add(dependency.getParentTask().getId())
+                );
+        return ResponseEntity.ok(updatedTask);
     }
 
     @DeleteMapping("/{id}")
@@ -149,17 +124,7 @@ public class TaskController {
         if (!optionalTask.isPresent()) {
             return ResponseEntity.notFound().build();
         }
-
-        try {
-
-            taskService.removeTask(optionalTask.get());
-
-        } catch (BreakChainBetweenTasksException ex) {
-
-            Map<String, String> message = Collections.singletonMap("message", ex.getMessage());
-            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
-        }
-
+        taskService.removeTask(optionalTask.get());
         return ResponseEntity.ok().build();
     }
 }

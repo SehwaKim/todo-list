@@ -1,9 +1,8 @@
-package me.sehwa.todolist.taskDependencies;
+package com.todolist.todolist.repository;
 
-import me.sehwa.todolist.tasks.Task;
-import me.sehwa.todolist.tasks.TaskRepository;
+import com.todolist.todolist.domain.Task;
+import com.todolist.todolist.domain.TaskDependency;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

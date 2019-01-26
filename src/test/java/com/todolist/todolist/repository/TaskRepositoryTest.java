@@ -1,5 +1,7 @@
-package me.sehwa.todolist.tasks;
+package com.todolist.todolist.repository;
 
+import com.todolist.todolist.domain.Task;
+import com.todolist.todolist.domain.TaskStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,5 +1,6 @@
-package me.sehwa.todolist.tasks;
+package com.todolist.todolist.domain;
 
+import com.todolist.todolist.domain.TaskStatus;
 import lombok.*;
 
 import java.util.List;

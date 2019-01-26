@@ -1,4 +1,4 @@
-package me.sehwa.todolist.index;
+package com.todolist.todolist.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

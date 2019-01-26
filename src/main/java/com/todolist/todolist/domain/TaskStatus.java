@@ -1,4 +1,4 @@
-package me.sehwa.todolist.tasks;
+package com.todolist.todolist.domain;
 
 public enum TaskStatus {
     TODO, DONE;

@@ -1,11 +1,10 @@
-package me.sehwa.todolist.taskDependencies;
+package com.todolist.todolist.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import me.sehwa.todolist.tasks.Task;
 
 import javax.persistence.*;
 

@@ -1,9 +1,10 @@
-package me.sehwa.todolist.tasks;
+package com.todolist.todolist.service;
 
-import me.sehwa.todolist.exceptions.BreakChainBetweenTasksException;
-import me.sehwa.todolist.exceptions.NoSuchTaskException;
-import me.sehwa.todolist.taskDependencies.TaskDependency;
-import me.sehwa.todolist.taskDependencies.TaskDependencyRepository;
+import com.todolist.todolist.domain.Task;
+import com.todolist.todolist.domain.TaskDependency;
+import com.todolist.todolist.exception.ServiceException;
+import com.todolist.todolist.repository.TaskDependencyRepository;
+import com.todolist.todolist.repository.TaskRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +74,7 @@ public class TaskServiceTest {
         verify(taskDependencyRepository, times(3)).save(any(TaskDependency.class));
     }
 
-    @Test(expected = NoSuchTaskException.class)
+    @Test(expected = ServiceException.class)
     public void 새_TODO_추가시_없는TODO를_참조하려고할때_예외발생처리() {
         when(taskRepository.save(any(Task.class))).thenReturn(mock(Task.class));
         when(taskRepository.findById(any(Long.class))).thenReturn(Optional.empty());
@@ -134,7 +135,7 @@ public class TaskServiceTest {
         verify(taskRepository, times(1)).delete(any(Task.class));
     }
 
-    @Test(expected = BreakChainBetweenTasksException.class)
+    @Test(expected = ServiceException.class)
     public void 다른TODO들에게_참조당하는_TODO_삭제하려고할때_예외발생처리() {
         Task mockTask = mock(Task.class);
         List<TaskDependency> mockList = mock(List.class);

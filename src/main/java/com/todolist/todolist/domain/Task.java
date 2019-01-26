@@ -1,9 +1,8 @@
-package me.sehwa.todolist.tasks;
+package com.todolist.todolist.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import me.sehwa.todolist.taskDependencies.TaskDependency;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

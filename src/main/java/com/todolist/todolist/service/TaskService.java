@@ -1,11 +1,13 @@
-package me.sehwa.todolist.tasks;
+package com.todolist.todolist.service;
 
-import me.sehwa.todolist.exceptions.AllTasksNeedToBeDoneException;
-import me.sehwa.todolist.exceptions.BreakChainBetweenTasksException;
-import me.sehwa.todolist.exceptions.CircularReferenceException;
-import me.sehwa.todolist.exceptions.NoSuchTaskException;
-import me.sehwa.todolist.taskDependencies.TaskDependency;
-import me.sehwa.todolist.taskDependencies.TaskDependencyRepository;
+import com.todolist.todolist.domain.Task;
+import com.todolist.todolist.domain.TaskDependency;
+import com.todolist.todolist.domain.TaskDto;
+import com.todolist.todolist.domain.TaskStatus;
+import com.todolist.todolist.exception.ExceptionType;
+import com.todolist.todolist.exception.ServiceException;
+import com.todolist.todolist.repository.TaskDependencyRepository;
+import com.todolist.todolist.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +37,7 @@ public class TaskService {
         for (Long Id : idGroupOfTasksToBeParent) {
 
             Optional<Task> optionalTask = taskRepository.findById(Id);
-            Task taskToBeParent = optionalTask.orElseThrow(NoSuchTaskException::new);
+            Task taskToBeParent = optionalTask.orElseThrow(() -> new ServiceException(ExceptionType.NO_SUCH_TASK));
 
             TaskDependency dependency = TaskDependency.builder()
                                         .childTask(savedTask).parentTask(taskToBeParent).build();
@@ -136,10 +138,10 @@ public class TaskService {
 
     private Task getTaskToBeParent(Long id, Task updatingTask) {
         Optional<Task> optionalTask = taskRepository.findById(id);
-        Task task = optionalTask.orElseThrow(NoSuchTaskException::new);
+        Task task = optionalTask.orElseThrow(() -> new ServiceException(ExceptionType.NO_SUCH_TASK));
 
         if (isChildTaskOf(updatingTask, id)) {
-            throw new CircularReferenceException();
+            throw new ServiceException(ExceptionType.CIRCULAR_REFERENCE);
         }
 
         return task;
@@ -196,7 +198,7 @@ public class TaskService {
                             .allMatch(dependency -> dependency.getParentTask().getStatus().isDone());
 
         if (!allParentTasksDone) {
-            throw new AllTasksNeedToBeDoneException();
+            throw new ServiceException(ExceptionType.ALL_TASK_NEED_TO_BE_DONE);
         }
 
         updatingTask.setStatus(TaskStatus.DONE);
@@ -242,7 +244,7 @@ public class TaskService {
     @Transactional
     public boolean removeTask(Task removingTask) {
         if (!removingTask.getChildTasksFollowingParentTask().isEmpty()) {
-            throw new BreakChainBetweenTasksException();
+            throw new ServiceException(ExceptionType.BREAK_CHAIN_BETWEEN_TASKS);
         }
 
         taskDependencyRepository.deleteAllByChildTaskId(removingTask.getId());
