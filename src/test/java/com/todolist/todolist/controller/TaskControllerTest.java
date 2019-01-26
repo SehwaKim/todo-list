@@ -236,7 +236,7 @@ public class TaskControllerTest {
         task.setParentTasksFollowedByChildTask(new ArrayList<>());
         task.setChildTasksFollowingParentTask(new ArrayList<>());
         task.setParentTaskIdList(new ArrayList<>());
-        task.setParentTaskIdsString("");
+        task.setParentTaskIdString("");
 
         return task;
     }

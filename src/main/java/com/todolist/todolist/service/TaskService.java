@@ -54,18 +54,7 @@ public class TaskService {
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Page<Task> tasks = taskRepository.findAll(PageRequest.of(page - 1, size, sort));
 
-        tasks.forEach(task -> {
-                    StringBuilder sb = new StringBuilder();
-
-                    task.getParentTasksFollowedByChildTask()
-                            .forEach(dependency ->{
-                                task.getParentTaskIdList().add(dependency.getParentTask().getId());
-                                sb.append(" @"+dependency.getParentTask().getId());
-                            });
-
-                    task.setParentTaskIdsString(sb.toString());
-                }
-        );
+        tasks.forEach(task -> task.setParentTaskIdString(makeParentIdString(task)));
 
         return tasks;
     }
@@ -79,15 +68,21 @@ public class TaskService {
         }
 
         Task task = optionalTask.get();
+        task.setParentTaskIdString(makeParentIdString(task));
+        return task;
+    }
+
+    private String makeParentIdString(Task task) {
+
         StringBuilder sb = new StringBuilder();
-        System.out.println(task);
+
         task.getParentTasksFollowedByChildTask().forEach(dependency ->{
                     task.getParentTaskIdList().add(dependency.getParentTask().getId());
                     sb.append(" @"+dependency.getParentTask().getId());
                 }
         );
-        task.setParentTaskIdsString(sb.toString());
-        return task;
+
+        return sb.toString();
     }
 
     @Transactional
